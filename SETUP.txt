@@ -1,0 +1,298 @@
+You're correct—**Vite** is a much faster and more efficient tool for building React applications compared to `create-react-app` (CRA). It offers:
+
+- **Faster Builds**: Vite uses `esbuild`, which is significantly faster than CRA’s Webpack.
+- **Hot Module Replacement (HMR)**: Super-fast updates in development.
+- **Smaller Bundles**: Optimized production builds.
+
+Let's set up the project with **Node.js**, **Vite (React)**, and **MySQL** for backend development.
+
+---
+
+### **Step 1: Install Prerequisites**
+Ensure you have the following installed:
+1. **Node.js**: Download from [Node.js Download](https://nodejs.org/).
+2. **MySQL**: Install from [MySQL Community Downloads](https://dev.mysql.com/downloads/mysql/).
+3. **Git** (optional but recommended): Download from [Git](https://git-scm.com/).
+
+---
+
+### **Step 2: Initialize the Project**
+
+#### 1. Create the Project Folder
+```bash
+mkdir wasa-risk
+cd wasa-risk
+```
+
+---
+
+#### 2. Set Up the Backend
+```bash
+mkdir backend
+cd backend
+npm init -y
+npm install express mysql2 cors dotenv jsonwebtoken bcrypt
+npm install --save-dev nodemon
+```
+
+Update the `package.json` to include a development script:
+```json
+"scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+}
+```
+
+---
+
+#### 3. Set Up the Frontend with Vite
+Navigate back to the root directory and create a new Vite project:
+```bash
+cd ..
+npm create vite@latest frontend --template react
+cd frontend
+npm install
+npm install axios react-router-dom
+```
+
+---
+
+### **Step 3: Configure the Backend**
+
+#### 1. Create `.env` File
+- File: `backend/.env`
+```env
+PORT=4000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=wasa_risk
+JWT_SECRET=your_jwt_secret
+```
+
+---
+
+#### 2. Configure Database
+- File: `backend/config/database.js`
+```javascript
+const mysql = require('mysql2');
+
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+});
+
+module.exports = pool.promise();
+```
+
+---
+
+#### 3. Create Main Server File
+- File: `backend/server.js`
+```javascript
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+
+// Config
+dotenv.config();
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Test Route
+app.get('/', (req, res) => res.send('Backend is running!'));
+
+// Start Server
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+```
+
+---
+
+### **Step 4: Configure the Frontend**
+
+#### 1. Update Main File
+- File: `frontend/src/main.jsx`
+Replace the content with:
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+        <Router>
+            <App />
+        </Router>
+    </React.StrictMode>
+);
+```
+
+---
+
+#### 2. Update App File
+- File: `frontend/src/App.jsx`
+```javascript
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+
+const App = () => {
+    return (
+        <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+    );
+};
+
+export default App;
+```
+
+---
+
+#### 3. Add Login Component
+- File: `frontend/src/components/Login.jsx`
+```javascript
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const Login = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await axios.post('http://localhost:4000/auth/login', { email, password });
+            localStorage.setItem('token', res.data.token);
+            alert('Login successful!');
+            window.location.href = '/dashboard';
+        } catch (err) {
+            console.error(err);
+            alert('Login failed. Please check your credentials.');
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <label>Email:</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <label>Password:</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <button type="submit">Login</button>
+        </form>
+    );
+};
+
+export default Login;
+```
+
+---
+
+#### 4. Add Dashboard Component
+- File: `frontend/src/components/Dashboard.jsx`
+```javascript
+import React from 'react';
+
+const Dashboard = () => {
+    return <h1>Welcome to the Dashboard!</h1>;
+};
+
+export default Dashboard;
+```
+
+---
+
+### **Step 5: Configure MySQL**
+
+1. **Create the Database**:
+   ```sql
+   CREATE DATABASE wasa_risk;
+   ```
+
+2. **Create Tables**:
+   ```sql
+   CREATE TABLE users (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       name VARCHAR(255) NOT NULL,
+       email VARCHAR(255) NOT NULL UNIQUE,
+       phone_number VARCHAR(20),
+       password VARCHAR(255) NOT NULL,
+       role ENUM('user', 'superuser') DEFAULT 'user',
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   );
+CREATE TABLE assessments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Job Site Location data
+    job_site_location VARCHAR(255) NOT NULL,
+    job_site_lat FLOAT,
+    job_site_lng FLOAT,
+
+    -- Nearest Hospital details
+    nearest_hospital_name VARCHAR(100),
+    nearest_hospital_address VARCHAR(255),
+    nearest_hospital_phone VARCHAR(20),
+
+    -- Other assessment data stored as JSON
+    on_site_arborists JSON,
+    weather_conditions JSON,
+    methods_of_work JSON,
+    location_risks JSON,
+    tree_risks JSON,
+
+    -- New fields
+    car_key_location VARCHAR(255) NOT NULL,
+    additional_risks TEXT,
+    safety_confirmation BOOLEAN NOT NULL DEFAULT 0,
+    team_leader INT NOT NULL,
+
+    -- Tracking data
+    created_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (team_leader) REFERENCES users(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+
+   );
+   ```
+
+---
+
+### **Step 6: Run the Application**
+
+1. **Start Backend**:
+   ```bash
+   cd backend
+   npm run dev
+   ```
+
+2. **Start Frontend**:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+3. **Access the App**:
+   - Backend: [http://localhost:4000](http://localhost:4000)
+   - Frontend: [http://localhost:5173](http://localhost:5173)
+
+---
+
+### **Step 7: Deployment**
+
+For deployment, we can:
+- **Backend**: Deploy using **Heroku**, **Render**, or **AWS**.
+- **Frontend**: Deploy the Vite build output to **Netlify**, **Vercel**, or similar.
+
+Let me know if you’d like further customization or enhancements! 😊

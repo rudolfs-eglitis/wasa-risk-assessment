@@ -1,0 +1,58 @@
+export const hospitals = [
+    {
+        name: "Huddinge",
+        address: "Hälsovägen 13, Blickagången 20, 141 57 Huddinge",
+        lat: 59.2361,
+        lng: 17.9466,
+        phone: "0812380000",
+    },
+    {
+        name: "Danderyd",
+        address: "Entrévägen 2, 182 57 Danderyd",
+        lat: 59.3988,
+        lng: 18.0379,
+        phone: "0812355035",
+    },
+    {
+        name: "SÖS Söder",
+        address: "Sjukhusbacken 14, 118 61 Stockholm",
+        lat: 59.3113,
+        lng: 18.0711,
+        phone: "0812361000",
+    },
+    {
+        name: "Södertälje",
+        address: "Erik Dahlbergs väg 14 B, Hus 20, Plan 3, 152 40 Södertälje",
+        lat: 59.1955,
+        lng: 17.6253,
+        phone: "0812324031",
+    },
+    {
+        name: "Norrtälje",
+        address: "Esplanaden 24, 761 45 Norrtälje",
+        lat: 59.7587,
+        lng: 18.7011,
+        phone: "0176326021",
+    },
+    {
+        name: "Karolinska",
+        address: "Anna Steckséns g 33, 171 64 Solna",
+        lat: 59.3536,
+        lng: 18.0319,
+        phone: "0812370000",
+    },
+    {
+        name: "Nacka",
+        address: "Lasarettsvägen 4, 131 45 Nacka",
+        lat: 59.3109,
+        lng: 18.1837,
+        phone: "086015300",
+    },
+    {
+        name: "Saint Göran's",
+        address: "S:t Göransgatan 139, 112 19 Stockholm",
+        lat: 59.3385,
+        lng: 18.0274,
+        phone: "0858701000",
+    },
+];
