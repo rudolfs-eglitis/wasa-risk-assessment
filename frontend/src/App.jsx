@@ -4,15 +4,12 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import AddUserForm from './components/AddUserForm';
 import UserManagement from './components/UserManagement';
-import ProtectedRoute from './ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import RiskAssessmentForm from './components/RiskAssessmentForm';
 import TodayAssessments from './components/TodayAssessments';
 import AssessmentHistory from './components/AssessmentHistory';
 import AssessmentDetail from './components/AssessmentDetail';
-
-import Header from './components/Header'; // Import the Header
-
 
 import '../public/styles.css';
 import { isAuthenticated } from './utils/auth';
@@ -58,7 +55,7 @@ const App = () => {
             <Route
                 path="/add-user"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="admin">
                         <Layout>
                             <AddUserForm />
                         </Layout>
@@ -69,7 +66,7 @@ const App = () => {
             <Route
                 path="/user-management"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="admin">
                         <Layout>
                             <UserManagement />
                         </Layout>
@@ -104,7 +101,7 @@ const App = () => {
             <Route
                 path="/history"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="admin">
                         <Layout>
                             <AssessmentHistory />
                         </Layout>

@@ -233,7 +233,7 @@ CREATE TABLE assessments (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     -- Job Site Location data
-    job_site_location VARCHAR(255) NOT NULL,
+    job_site_address VARCHAR(255) NOT NULL,
     job_site_lat FLOAT,
     job_site_lng FLOAT,
 

@@ -23,8 +23,25 @@ const handleLogout = async () => {
     }
 };
 
+// A helper function to decode JWT and return its payload
+const getTokenPayload = (token) => {
+    try {
+        return JSON.parse(atob(token.split('.')[1]));
+    } catch (error) {
+        console.error('Error decoding token:', error);
+        return null;
+    }
+};
+
+
 const Header = () => {
     const navigate = useNavigate();
+
+    const token = localStorage.getItem('token');
+    if (!token) return null; // If there's no token, don't show the header
+
+    const payload = getTokenPayload(token);
+    const isAdmin = payload && payload.role === 'admin';
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
@@ -42,8 +59,12 @@ const Header = () => {
                 <ul>
                     <li><Link to="/today">Today</Link></li>
                     <li><Link to="/create-assessment">New</Link></li>
-                    <li><Link to="/history">History</Link></li>
-                    <li><Link to="/user-management">Users</Link></li>
+                    {isAdmin && (
+                        <>
+                            <li><Link to="/history">History</Link></li>
+                            <li><Link to="/user-management">Users</Link></li>
+                        </>
+                    )}
                 </ul>
             </nav>
             <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
