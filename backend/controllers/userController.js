@@ -9,6 +9,11 @@ const tokenBlacklist = []; // In-memory token blacklist (you may use Redis for s
 exports.addUser = async (req, res) => {
     const { name, email, phone_number, role } = req.body;
 
+    // Validate input (basic check)
+    if (!name || !email|| !phone_number || !role) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     try {
         // Generate a random password (simple for now)
         const generatedPassword = Math.random().toString(36).slice(-8); // 8-character random password
