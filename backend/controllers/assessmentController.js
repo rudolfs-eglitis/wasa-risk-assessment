@@ -164,6 +164,8 @@ exports.getAssessmentHistory = async (req, res) => {
 // Get a single assessment by ID, including creator and team leader names
 exports.getAssessmentById = async (req, res) => {
     try {
+        console.log('Authenticated user:', req.user); // Debug line
+
         const { id } = req.params;
 
         // Join the assessments table with the users table for creator and team leader names
