@@ -394,7 +394,7 @@ const RiskAssessmentForm = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await api.post('/assessments', formData, {
+            const response = await api.post('/assessments/create', formData, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 

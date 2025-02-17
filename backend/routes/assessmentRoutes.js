@@ -11,7 +11,7 @@ const requireAdmin = require('../middleware/requireAdmin'); // Middleware to res
 const router = express.Router();
 
 // Endpoint to create a new assessment
-router.post('/', authenticateToken, createAssessment);
+router.post('/create', authenticateToken, createAssessment);
 
 // Fetch today's assessments for the current user
 router.get('/today', authenticateToken, getTodayAssessments);
