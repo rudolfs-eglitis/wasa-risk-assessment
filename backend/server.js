@@ -38,3 +38,11 @@ app.get('*', (req, res) => {
 // Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// After all routes are defined, add this error-handling middleware:
+app.use((err, req, res, next) => {
+    // Log the full error stack for debugging
+    console.error('Unhandled error:', err.stack);
+    // Optionally, log to a file or external logging service here
+    res.status(500).json({ error: err.message });
+});

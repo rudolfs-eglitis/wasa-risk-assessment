@@ -32,8 +32,8 @@ exports.addUser = async (req, res) => {
             generatedPassword,
         });
     } catch (error) {
-        console.error('Error adding user:', error.message);
-        res.status(500).json({ error: 'Could not add user' });
+        console.error('Error creating user:', error.stack);
+        res.status(500).json({ error: 'Failed to create user.', details: error.message });
     }
 };
 

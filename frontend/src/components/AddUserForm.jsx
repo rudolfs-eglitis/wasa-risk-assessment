@@ -35,7 +35,7 @@ const AddUserForm = () => {
 
     return (
         <div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} method="POST">
                 {generatedPassword && (
                     <div className="message">
                         <h4>User added successfully!</h4>
