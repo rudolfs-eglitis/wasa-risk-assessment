@@ -1,8 +1,14 @@
 import axios from 'axios';
 
-// Create Axios instance
+const baseURL =
+    process.env.NODE_ENV === 'production'
+        ? 'https://risk.wasatradfallning.com'
+        : 'http://localhost:4000';
+
+
+// Create an Axios instance with the base URL of your backend API
 const api = axios.create({
-    baseURL: 'https://risk.wasatradfallning.com', // Replace with your backend URL
+    baseURL,
 });
 
 // Axios Interceptor for handling token expiration
@@ -16,7 +22,7 @@ api.interceptors.response.use(
 
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
-                const response = await axios.post('https://risk.wasatradfallning.com/auth/refresh', { refreshToken });
+                const response = await axios.post('http://localhost:4000/auth/refresh', { refreshToken });
 
                 // Update access token
                 const { accessToken } = response.data;

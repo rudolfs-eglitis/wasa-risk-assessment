@@ -1,9 +1,14 @@
 import axios from 'axios';
 
+const baseURL =
+    process.env.NODE_ENV === 'production'
+        ? 'https://risk.wasatradfallning.com'
+        : 'http://localhost:4000';
+
+
 // Create an Axios instance with the base URL of your backend API
 const api = axios.create({
-    baseURL: 'https://risk.wasatradfallning.com', // Replace with your backend URL if different
-    //baseURL: 'http://localhost:4000', // Replace with your backend URL if different
+    baseURL,
 });
 
 // Add a response interceptor to handle errors globally
