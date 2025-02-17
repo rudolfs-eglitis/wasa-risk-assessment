@@ -353,13 +353,13 @@ const RiskAssessmentForm = () => {
             validationErrors.weatherApproval = 'Confirm that the work can proceed safely despite weather conditions, reschedule otherwise';
         }
 
-        // Validate tree risks: if any risk other than "No remarks" is selected, confirmation must be checked.
-        if (treeRisks.some((risk) => risk !== 'No remarks') && !treeRisksApproved) {
-            newErrors.treeRisks = 'Confirm that the work can proceed safely despite tree risks reschedule otherwise';
-        }
-
         if (!safetyApproval) {
             validationErrors.safetyApproval = 'Safety approval is required.';
+        }
+
+        // Validate tree risks: if any risk other than "No remarks" is selected, confirmation must be checked.
+        if (treeRisks.some((risk) => risk !== 'No remarks') && !treeRisksApproved) {
+            validationErrors.treeRisks = 'Confirm that the work can proceed safely despite tree risks, reschedule otherwise';
         }
 
         setErrors(validationErrors);

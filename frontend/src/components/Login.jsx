@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import api from "../utils/api.js";
 
 const Login = () => {
@@ -19,14 +18,18 @@ const Login = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <h2>Login</h2>
-            <label>Email:</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <label>Password:</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            <button type="submit">Login</button>
-        </form>
+        <div className="layout">
+            <main>
+                <form onSubmit={handleSubmit}>
+                    <h2>Login</h2>
+                    <label>Email:</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required/>
+                    <label>Password:</label>
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
+                    <button type="submit">Login</button>
+                </form>
+            </main>
+        </div>
     );
 };
 

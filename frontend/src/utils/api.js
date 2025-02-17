@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Create an Axios instance with the base URL of your backend API
 const api = axios.create({
-    baseURL: 'http://localhost:4000', // Replace with your backend URL if different
+    baseURL: 'https://risk.wasatradfallning.com', // Replace with your backend URL if different
+    //baseURL: 'http://localhost:4000', // Replace with your backend URL if different
 });
 
 // Add a response interceptor to handle errors globally
