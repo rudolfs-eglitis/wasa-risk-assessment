@@ -14,6 +14,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
+        console.log("Token from localStorage:", token); // Temporary log to verify token presence
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
             // For debugging:
