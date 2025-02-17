@@ -409,7 +409,7 @@ const RiskAssessmentForm = () => {
 
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} method="POST">
             <h2>Risk assessment form</h2>
             <h3>Job Site Location</h3>
             <div>
