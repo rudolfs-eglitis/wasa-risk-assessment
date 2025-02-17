@@ -58,7 +58,7 @@ exports.getAllUsers = async (req, res) => {
 // Fetch all user without sensitive data
 exports.getArborists = async (req, res) => {
     try {
-        const [users] = await db.query('SELECT id, name, email, phone_number FROM users');
+        const [users] = await db.query('SELECT id, name, email, phone_number FROM users WHERE role <> ?', ['inactive']);
         res.json(users);
     } catch (error) {
         console.error('Error fetching arborists:', error.message);
@@ -94,20 +94,55 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
-// Delete user
 exports.deleteUser = async (req, res) => {
-    const userId = req.params.id;
-
-    // Prevent deleting users with ID 1 and 2
-    if (userId === '1' || userId === '2') {
-        return res.status(403).json({ error: 'Cannot delete this user.' });
-    }
-
     try {
-        await db.query('DELETE FROM users WHERE id = ?', [userId]);
-        res.json({ message: 'User deleted successfully!' });
+        const userId = req.params.id;
+
+        // Optionally, you can protect certain user IDs from being deactivated (e.g., admin accounts).
+        // For example, if userId is 1 or 2, you might want to disallow the operation.
+        if (userId === '1' || userId === '2') {
+            return res.status(403).json({ error: "Cannot deactivate an admin user." });
+        }
+
+        // Instead of deleting the user, update their role to 'inactive'
+        const [result] = await db.query('UPDATE users SET role = ? WHERE id = ?', ['inactive', userId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        res.json({ message: 'User deactivated successfully.' });
     } catch (error) {
-        console.error('Error deleting user:', error.message);
-        res.status(500).json({ error: 'Failed to delete user' });
+        console.error('Error deactivating user:', error.stack);
+        res.status(500).json({ error: 'Failed to deactivate user.' });
+    }
+};
+
+exports.toggleUserActivation = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        // Fetch the user's current role
+        const [rows] = await db.query('SELECT role FROM users WHERE id = ?', [userId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        const currentRole = rows[0].role;
+
+        // Prevent toggling for admin users
+        if (userId === '1' || userId === '2') {
+            return res.status(403).json({ error: 'Cannot toggle activation for these users.' });
+        }
+
+        // Toggle role: if inactive, set to user; if user, set to inactive.
+        const newRole = (currentRole === 'inactive') ? 'user' : 'inactive';
+
+        await db.query('UPDATE users SET role = ? WHERE id = ?', [newRole, userId]);
+
+        res.json({ message: `User role updated to "${newRole}".` });
+    } catch (error) {
+        console.error('Error toggling user activation:', error.stack);
+        res.status(500).json({ error: 'Failed to toggle user activation.' });
     }
 };

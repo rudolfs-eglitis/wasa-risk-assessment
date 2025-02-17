@@ -41,17 +41,18 @@ const UserManagement = () => {
         }
     };
 
-    const deleteUser = async (userId) => {
+    // Toggle user activation status
+    const handleToggleActivation = async (userId) => {
         try {
             const token = localStorage.getItem('token');
-            await api.delete(`/users/${userId}`, {
+            await api.patch(`/users/${userId}/toggle-activation`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setMessage('User deleted successfully!');
-            fetchUsers(); // Refresh the user list
-        } catch (err) {
-            console.error('Error deleting user:', err);
-            setMessage('Failed to delete user.');
+            alert('User role changed successfully!.');
+            fetchUsers(); // Refresh the list
+        } catch (error) {
+            console.error('Error toggling user role:', error.response?.data || error.message);
+            alert('Failed to toggle user activation.');
         }
     };
 
@@ -82,7 +83,9 @@ const UserManagement = () => {
                         <td>
                             <button onClick={() => resetPassword(user.id)}>Reset Password</button>
                             {user.id !== 1 && user.id !== 2 && (
-                                <button onClick={() => deleteUser(user.id)}>Delete</button>
+                                <button onClick={() => handleToggleActivation(user.id)} style={{marginLeft: '10px'}}>
+                                    {user.role === 'inactive' ? 'Activate' : 'Deactivate'}
+                                </button>
                             )}
                         </td>
                     </tr>

@@ -8,7 +8,18 @@ exports.login = async (req, res) => {
     try {
         const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
         const user = users[0];
+
         if (!user) return res.status(401).json({ error: 'Invalid email or password' });
+
+        // Log the role for debugging
+        console.log('User role from DB:', user.role);
+
+        // Normalize the role before checking (in case there are extra spaces or different casing)
+        const normalizedRole = user.role.trim().toLowerCase();
+        if (normalizedRole === 'inactive') {
+            return res.status(403).json({ error: 'Your account is inactive' });
+        }
+
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) return res.status(401).json({ error: 'Invalid email or password' });
