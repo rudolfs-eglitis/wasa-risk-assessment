@@ -5,25 +5,32 @@ const baseURL =
         ? 'https://risk.wasatradfallning.com'
         : 'http://localhost:4000';
 
-
 // Create an Axios instance with the base URL of your backend API
 const api = axios.create({
     baseURL,
 });
 
+// Request interceptor to automatically attach the Authorization header
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
 // Add a response interceptor to handle errors globally
 api.interceptors.response.use(
-    (response) => response, // If the response is fine, just return it
+    (response) => response, // Return the response if no error occurs
     (error) => {
-        // Check if the error response exists and its status is 403
+        // If a 403 error is returned, clear token and redirect to login
         if (error.response && error.response.status === 403) {
-            // Log out the user by removing the stored token
             localStorage.removeItem('token');
-            // Optionally, you can remove any other related user info
-            // Redirect the user to the login page
             window.location.href = '/login';
         }
-        // Reject the error so that the calling code can handle it too if needed
         return Promise.reject(error);
     }
 );
