@@ -6,8 +6,7 @@ const { getAssessmentHistory } = require('../controllers/assessmentController');
 
 
 const authenticateToken = require('../middleware/authenticateToken');
-const requireAdmin = require('../middleware/requireAdmin'); // Middleware to restrict access to admins
-
+const requireAdmin = require('../middleware/requireAdmin');
 
 const router = express.Router();
 
