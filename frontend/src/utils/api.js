@@ -31,7 +31,7 @@ api.interceptors.response.use(
     (error) => {
         // If a 403 error is returned, clear token and redirect to login
         if (error.response && error.response.status === 403) {
-            //localStorage.removeItem('token');
+            localStorage.removeItem('token');
             window.location.href = '/login';
         }
         return Promise.reject(error);
