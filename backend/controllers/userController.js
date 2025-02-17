@@ -1,35 +1,41 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const db = require('../config/database');
 
 const tokenBlacklist = []; // In-memory token blacklist (you may use Redis for scalability)
 
-
-// Add user
-exports.addUser = async (req, res) => {
-    const { name, email, phone_number, role } = req.body;
-
-    // Validate input (basic check)
-    if (!name || !email|| !phone_number || !role) {
-        return res.status(400).json({ error: 'Missing required fields' });
-    }
-
+exports.createUser = async (req, res) => {
     try {
-        // Generate a random password (simple for now)
-        const generatedPassword = Math.random().toString(36).slice(-8); // 8-character random password
+        const { name, email, role, phone_number } = req.body;
+
+        // Validate required fields
+        if (!name || !email || !role || !phone_number) {
+            return res.status(400).json({ error: 'Missing required fields.' });
+        }
+
+        // Ensure role is one of the allowed ENUM values
+        const allowedRoles = ['admin', 'user', 'inactive'];
+        if (!allowedRoles.includes(role)) {
+            return res.status(400).json({ error: 'Invalid role provided.' });
+        }
+
+        // Generate a random password (16 hex characters, for example)
+        const generatedPassword = crypto.randomBytes(8).toString('hex');
+
+        // Hash the generated password
         const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
-        // Insert the user into the database
-        const [result] = await db.query(
-            'INSERT INTO users (name, email, phone_number, password, role) VALUES (?, ?, ?, ?, ?)',
-            [name, email, phone_number, hashedPassword, role]
+        // Insert the new user into the database
+        await db.query(
+            `INSERT INTO users (name, email, password, role, phone_number) VALUES (?, ?, ?, ?, ?)`,
+            [name.trim(), email.trim(), hashedPassword, role, phone_number.trim()]
         );
 
-        // Return the user and generated password
+        console.log(`User created: ${name}`);
         res.status(201).json({
-            message: 'User added successfully!',
-            userId: result.insertId,
-            generatedPassword,
+            message: 'User created successfully!',
+            generatedPassword, // Return the plain-text generated password so admin can share it
         });
     } catch (error) {
         console.error('Error creating user:', error.stack);

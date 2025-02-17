@@ -1,12 +1,13 @@
 const express = require('express');
-const { addUser } = require('../controllers/userController');
+const { createUser } = require('../controllers/userController');
 const { getAllUsers, resetPassword, deleteUser } = require('../controllers/userController');
 const { getArborists } = require('../controllers/userController');
 const authenticateToken = require('../middleware/authenticateToken');
 const requireAdmin = require('../middleware/requireAdmin');
 const router = express.Router();
 
-router.post('/', [authenticateToken, requireAdmin], addUser);
+router.post('/create', authenticateToken, requireAdmin, createUser);
+
 
 // List all users
 router.get('/', [authenticateToken, requireAdmin], getAllUsers);
