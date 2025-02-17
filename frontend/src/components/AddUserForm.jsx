@@ -14,7 +14,6 @@ const AddUserForm = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        console.log(`Field ${name} changed to: ${value}`);
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
@@ -59,7 +58,6 @@ const AddUserForm = () => {
                 <div style={{ marginTop: '20px' }}>
                     <h3>User Created</h3>
                     <p><strong>Generated Password:</strong> {generatedPassword}</p>
-                    <p>Please share this password with the user and advise them to change it on first login.</p>
                 </div>
             )}
             <form onSubmit={handleSubmit} method="POST">
