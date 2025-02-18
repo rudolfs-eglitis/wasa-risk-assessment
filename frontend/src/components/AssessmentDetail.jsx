@@ -41,7 +41,7 @@ const AssessmentDetail = () => {
                 <strong>Created By:</strong> {assessment.created_by_name || 'Unknown'}
             </p>
             <p>
-                <strong>Crew:</strong> {assessment.on_site_arborists.join(', ')}
+                <strong>Crew:</strong> {(assessment.on_site_arborists || []).join(', ')}
             </p>
             <p>
                 <strong>Nearest Hospital:</strong> {assessment.nearest_hospital_name} &nbsp;
