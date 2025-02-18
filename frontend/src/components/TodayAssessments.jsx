@@ -16,20 +16,29 @@ const TodayAssessments = () => {
 
     const fetchTodayAssessments = async () => {
         try {
-            // Using the global API instance instead of axios directly
             const token = localStorage.getItem('token');
             const response = await api.get('/assessments/today', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            if (response.data.length > 0) {
-                const sortedAssessments = response.data.sort(
+            console.log("Response data:", response.data);
+
+            // Check if response.data is an array
+            if (!Array.isArray(response.data)) {
+                console.error("Expected an array but got:", response.data);
+                // Optionally, handle this case by wrapping it in an array:
+                // response.data = [response.data];
+            }
+
+            const data = Array.isArray(response.data) ? response.data : [];
+            if (data.length > 0) {
+                const sorted = data.sort(
                     (a, b) => new Date(b.created_at) - new Date(a.created_at)
                 );
-                setLatestAssessment(sortedAssessments[0]);
-                setOtherAssessments(sortedAssessments.slice(1));
+                setLatestAssessment(sorted[0]);
+                setOtherAssessments(sorted.slice(1));
             }
         } catch (error) {
-            console.error('Error fetching today\'s assessments:', error);
+            console.error("Error fetching today's assessments:", error);
         }
     };
 
