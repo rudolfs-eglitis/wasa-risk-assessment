@@ -1,8 +1,11 @@
 const express = require('express');
-const { createAssessment } = require('../controllers/assessmentController');
-const { getTodayAssessments } = require('../controllers/assessmentController');
-const { getAssessmentById } = require('../controllers/assessmentController');
-const { getAssessmentHistory } = require('../controllers/assessmentController');
+const {
+    getTodayAssessments,
+    getAssessmentHistory,
+    getAssessmentById,
+    createAssessment,
+    deleteTodayAssessment
+} = require('../controllers/assessmentController');
 
 
 const authenticateToken = require('../middleware/authenticateToken');
@@ -20,5 +23,7 @@ router.get('/today', authenticateToken, getTodayAssessments);
 router.get('/history', authenticateToken, requireAdmin, getAssessmentHistory);
 
 router.get('/:id', authenticateToken, getAssessmentById);
+
+router.delete('/:id', authenticateToken, deleteTodayAssessment);
 
 module.exports = router;

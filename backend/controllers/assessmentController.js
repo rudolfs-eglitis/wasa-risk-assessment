@@ -212,3 +212,33 @@ exports.getAssessmentById = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch assessment.' });
     }
 };
+
+exports.deleteTodayAssessment = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Fetch the assessment by ID
+        const [rows] = await db.query('SELECT * FROM assessments WHERE id = ?', [id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Assessment not found.' });
+        }
+        const assessment = rows[0];
+
+        // Check that the current user is the creator
+        if (parseInt(assessment.created_by) !== parseInt(req.user.id)) {
+            return res.status(403).json({ error: 'Not authorized to delete this assessment.' });
+        }
+
+        // Check that the assessment was created today
+        if (!moment(assessment.created_at).isSame(moment(), 'day')) {
+            return res.status(403).json({ error: 'Can only delete assessments for today.' });
+        }
+
+        // Delete the assessment
+        await db.query('DELETE FROM assessments WHERE id = ?', [id]);
+        res.json({ message: 'Assessment deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting assessment:', error.stack);
+        res.status(500).json({ error: 'Failed to delete assessment.' });
+    }
+};
