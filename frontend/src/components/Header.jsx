@@ -54,7 +54,6 @@ const Header = () => {
 
     return (
         <header style={headerStyle}>
-            <h1 style={{margin: 0}}><Link to="/" style={styles.link}>Wasa Trädfällning</Link></h1>
             <nav>
                 <ul>
                     <li><Link to="/today">Today</Link></li>

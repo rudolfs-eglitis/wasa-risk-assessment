@@ -724,7 +724,7 @@ const RiskAssessmentForm = () => {
 
                 {/* New Field: Safety Approval */}
                 <h3>Safety Confirmation</h3>
-                <div>
+                <div className="form-group">
                     <label>
                         <input
                             type="checkbox"
