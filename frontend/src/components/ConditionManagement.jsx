@@ -5,7 +5,8 @@ import { FaEdit, FaTrash, FaRegEdit, FaRegTrashAlt } from 'react-icons/fa';  // 
 
 
 const ConditionManagement = () => {
-    const [conditions, setConditions] = useState([]);
+    const [conditions, setConditions] = useState({});
+
     const [newCondition, setNewCondition] = useState({ type: 'weather', name: '' });
     const [hoveredEdit, setHoveredEdit] = useState(null);
     const [hoveredDelete, setHoveredDelete] = useState(null);
@@ -20,6 +21,8 @@ const ConditionManagement = () => {
             const response = await api.get('/conditions', {
                 headers: { Authorization: `Bearer ${token}` },
             });
+            console.log("Fetched conditions:", response.data); // Debugging line
+
             setConditions(response.data);
         } catch (error) {
             console.error('Error fetching conditions:', error);
@@ -86,7 +89,7 @@ const ConditionManagement = () => {
                 <button onClick={handleAddCondition}>Add Condition</button>
             </p>
 
-
+            {conditions && Object.keys(conditions).length > 0 ? (
             <ul>
                 {Object.entries(conditions).map(([type, list]) => (
                     <div key={type}>
@@ -118,6 +121,9 @@ const ConditionManagement = () => {
                     </div>
                 ))}
             </ul>
+            ) : (
+                <p>Loading conditions...</p> // Show a loading message if data isn't ready
+            )}
         </div>
     );
 };
