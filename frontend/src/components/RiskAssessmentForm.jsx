@@ -329,47 +329,62 @@ const RiskAssessmentForm = () => {
 
     const methodsOfWorkOptions = ['Ground felling', 'Section felling', 'Rigging', 'Pruning', 'Hedge trimming', 'Stump grinding', 'Planting', 'Root excavation']
 
-    const weatherOptions = [
-        'Good',
-        'Wind',
-        'Rain',
-        'Snow',
-        'Hail',
-        'Lightning',
-        'Extreme Heat',
-        'Extreme Cold',
-        'Ice',
-        'Fog',
-    ];
+    const [treeRiskOptions, setTreeRiskOptions] = useState(['No remarks']); // Default fallback
+    const [weatherOptions, setWeatherOptions] = useState(['Good']); // Default fallback
+    const [locationRiskOptions, setLocationRiskOptions] = useState(['']); // Default fallback
 
-    const treeRiskOptions = [
-        'No remarks',
-        'Broken/Dead/Loose branches',
-        'Dead tree',
-        'Defect root system',
-        'Fruiting bodies',
-        'Fungi',
-        'Cracks',
-        'Mechanical damage',
-        'Soil disturbance',
-        'Cavities',
-        'Included bark',
-        'Wildlife',
-    ];
-    const locationRiskOptions = [
-        'Private garden',
-        'BRF',
-        'School/Kindergarten',
-        'Road',
-        'Walking/Cycling path',
-        'Parking area',
-        'Forest',
-        'Park',
-        'Construction site',
-        'Railroad',
-        'Electricity wires',
-        'Terrain'
-    ];
+
+    useEffect(() => {
+        const fetchConditions = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await api.get('/conditions/all', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setConditions(response.data);  // Ensure conditions are correctly stored
+            } catch (error) {
+                console.error('Error fetching conditions:', error);
+            }
+        };
+
+        fetchConditions();
+    }, []);
+
+
+    useEffect(() => {
+        if (conditions.length > 0) {
+            // Extract only conditions of type "tree"
+            const treeConditions = conditions
+                .filter(condition => condition.type === "tree")
+                .map(condition => condition.name); // Assuming the condition object has a "name" property
+
+
+            setTreeRiskOptions(['No remarks', ...treeConditions]); // Always include "No remarks" as an option
+        }
+    }, [conditions]); // Run whenever conditions update
+
+    useEffect(() => {
+        if (conditions.length > 0) {
+            const weatherConditions = conditions
+                .filter(condition => condition.type === "weather")
+                .map(condition => condition.name); // Assuming conditions have a "name" field
+
+
+            setWeatherOptions(['Good', ...weatherConditions]); // Always include "Good" as an option
+        }
+    }, [conditions]); // Run whenever conditions update
+
+    useEffect(() => {
+        if (conditions.length > 0) {
+            const locationRiskOptions = conditions
+                .filter(condition => condition.type === "location")
+                .map(condition => condition.name); // Assuming conditions have a "name" field
+            setLocationRiskOptions(['Good', ...locationRiskOptions]);
+        }
+    }, [conditions]); // Run whenever conditions update
+
+
+
     const machineryOptions = [
         'Chipper',
         'Avant',
@@ -503,169 +518,176 @@ const RiskAssessmentForm = () => {
 
 
             {/* Nearest Hospital Section */}
-                <h3>Nearest Emergency Hospital</h3>
-                {nearestHospital ? (
-                    <div>
-                        <p>
-                            <strong>{nearestHospital.name}</strong>
-                        </p>
+            <h3>Nearest Emergency Hospital</h3>
+            {nearestHospital ? (
+                <div>
+                    <p>
+                        <strong>{nearestHospital.name}</strong>
+                    </p>
 
-                    </div>
-                ) : (
-                    <p>To be determined</p>
-                )}
-
-                {/* New Field: Car Key Location */}
-                <h3>Car Key and First Aid Location</h3>
-                <div className="form-group">
-                    <input
-                        type="text"
-                        name="carKeyLocation"
-                        value={carKeyLocation}
-                        onChange={(e) => setCarKeyLocation(e.target.value)}
-                    />
                 </div>
+            ) : (
+                <p>To be determined</p>
+            )}
+
+            {/* New Field: Car Key Location */}
+            <h3>Car Key and First Aid Location</h3>
+            <div className="form-group">
+                <input
+                    type="text"
+                    name="carKeyLocation"
+                    value={carKeyLocation}
+                    onChange={(e) => setCarKeyLocation(e.target.value)}
+                />
+            </div>
 
 
-                <h3>Team Leader</h3>
-                <div className="radio-group">
-                    {users.length > 0 ? (
-                        // Sort users alphabetically by name before mapping
-                        [...users].sort((a, b) => a.name.localeCompare(b.name)).map((user) => (
+            <h3>Team Leader</h3>
+            <div className="radio-group">
+                {users.length > 0 ? (
+                    // Sort users alphabetically by name before mapping
+                    [...users].sort((a, b) => a.name.localeCompare(b.name)).map((user) => (
+                        <label key={user.id}>
+                            <input
+                                type="radio"
+                                name="teamLeader"
+                                value={user.id}
+                                checked={teamLeader === String(user.id)}
+                                onChange={(e) => setTeamLeader(e.target.value)}
+                            />
+                            {user.name}
+                        </label>
+                    ))
+                ) : (
+                    <p>Loading arborists...</p>
+                )}
+                {errors.teamLeader && <p style={{color: 'red'}}>{errors.teamLeader}</p>}
+            </div>
+
+            {/* On-Site Arborists Section */}
+            <h3>Crew</h3>
+            <div className="checkbox-group">
+                {users.length > 0 ? (
+                    [...users]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((user) => (
                             <label key={user.id}>
                                 <input
-                                    type="radio"
-                                    name="teamLeader"
+                                    type="checkbox"
                                     value={user.id}
-                                    checked={teamLeader === String(user.id)}
-                                    onChange={(e) => setTeamLeader(e.target.value)}
+                                    checked={onSiteArborists.includes(user.id)}
+                                    onChange={() => toggleArborist(user.id)}
+                                    disabled={user.id === currentUser?.id} // Disable checkbox for the current user
                                 />
                                 {user.name}
                             </label>
                         ))
-                    ) : (
-                        <p>Loading arborists...</p>
-                    )}
-                    {errors.teamLeader && <p style={{color: 'red'}}>{errors.teamLeader}</p>}
-                </div>
+                ) : (
+                    <p>Loading arborists...</p>
+                )}
+                {errors.arborists && <p style={{color: 'red'}}>{errors.arborists}</p>}
+            </div>
 
-                {/* On-Site Arborists Section */}
-                <h3>Crew</h3>
-                <div className="checkbox-group">
-                    {users.length > 0 ? (
-                        [...users]
-                            .sort((a, b) => a.name.localeCompare(b.name))
-                            .map((user) => (
-                                <label key={user.id}>
-                                    <input
-                                        type="checkbox"
-                                        value={user.id}
-                                        checked={onSiteArborists.includes(user.id)}
-                                        onChange={() => toggleArborist(user.id)}
-                                        disabled={user.id === currentUser?.id} // Disable checkbox for the current user
-                                    />
-                                    {user.name}
-                                </label>
-                            ))
-                    ) : (
-                        <p>Loading arborists...</p>
-                    )}
-                    {errors.arborists && <p style={{color: 'red'}}>{errors.arborists}</p>}
-                </div>
-
-                {/* Methods of Work */}
-                <h3>Methods of Work</h3>
-                <div className="checkbox-group">
-                    {methodsOfWorkOptions.map((method) => (
-                        <div key={method}>
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    value={method}
-                                    checked={methodsOfWork.includes(method)}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setMethodsOfWork((prev) =>
-                                            prev.includes(value) ? prev.filter((m) => m !== value) : [...prev, value]
-                                        );
-                                    }}
-                                />
-                                {method}</label>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Weather Conditions */}
-                <h3>Weather Conditions</h3>
-                <div className="checkbox-group">
-                    {weatherOptions.map((condition) => (
-                        <label key={condition} style={{marginRight: '10px'}}>
-                            <input
-                                type="checkbox"
-                                value={condition}
-                                checked={weatherConditions.includes(condition)}
-                                onChange={(e) => {
-                                    const isChecked = e.target.checked;
-                                    const value = e.target.value;
-
-                                    if (isChecked) {
-                                        handleWeatherChange(value);
-                                    } else {
-                                        setWeatherConditions((prev) => prev.filter((c) => c !== value));
-                                        setWeatherApproval(false); // Reset the approval checkbox
-                                    }
-                                }}
-                            />
-                            {condition}
-                        </label>
-                    ))}
-                </div>
-
-                {/* Confirmation Checkbox */}
-                {!weatherConditions.includes('Good') && (
-                    <div style={{marginTop: '10px'}}>
+            {/* Methods of Work */}
+            <h3>Methods of Work</h3>
+            <div className="checkbox-group">
+                {methodsOfWorkOptions.map((method) => (
+                    <div key={method}>
                         <label>
                             <input
                                 type="checkbox"
-                                checked={weatherApproval}
-                                onChange={(e) => setWeatherApproval(e.target.checked)}
+                                value={method}
+                                checked={methodsOfWork.includes(method)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setMethodsOfWork((prev) =>
+                                        prev.includes(value) ? prev.filter((m) => m !== value) : [...prev, value]
+                                    );
+                                }}
                             />
-                            Can the work proceed safely despite the weather conditions?
-                        </label>
-                        {errors.weatherApproval && (
-                            <p style={{color: 'red', fontSize: '14px'}}>{errors.weatherApproval}</p>
-                        )}
+                            {method}</label>
                     </div>
-                )}
+                ))}
+            </div>
+
+            <h3>Weather Conditions</h3>
+            <div className="checkbox-group">
+                {weatherOptions.map((condition) => (
+                    <label key={condition} style={{marginRight: '10px'}}>
+                        <input
+                            type="checkbox"
+                            value={condition}
+                            checked={weatherConditions.includes(condition)}
+                            onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                const value = e.target.value;
+
+                                if (isChecked) {
+                                    setWeatherConditions(prev => {
+                                        if (value === 'Good') {
+                                            return ['Good']; // Reset everything if "Good" is selected
+                                        } else {
+                                            return [...prev.filter(c => c !== 'Good'), value];
+                                        }
+                                    });
+                                } else {
+                                    setWeatherConditions(prev => prev.filter(c => c !== value));
+                                }
+
+                                setWeatherApproval(false); // Reset confirmation when conditions change
+                            }}
+                        />
+                        {condition}
+                    </label>
+                ))}
+            </div>
 
 
-                {/* On-Site Machinery */}
-                <h3>On-Site Machinery</h3>
-                <div className="checkbox-group">
-                    {machineryOptions.map((machine) => (
-                        <div key={machine}>
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    value={machine}
-                                    checked={onSiteMachinery.includes(machine)}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setOnSiteMachinery((prev) =>
-                                            prev.includes(value) ? prev.filter((m) => m !== value) : [...prev, value]
-                                        );
-                                    }}
-                                />
-                                {machine}</label>
-                        </div>
-                    ))}
+            {/* Confirmation Checkbox */}
+            {!weatherConditions.includes('Good') && (
+                <div style={{marginTop: '10px'}}>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={weatherApproval}
+                            onChange={(e) => setWeatherApproval(e.target.checked)}
+                        />
+                        Can the work proceed safely despite the weather conditions?
+                    </label>
+                    {errors.weatherApproval && (
+                        <p style={{color: 'red', fontSize: '14px'}}>{errors.weatherApproval}</p>
+                    )}
                 </div>
+            )}
 
 
-                {/* Location Risks */}
-                <h3>Location Considerations</h3>
-                <div className="checkbox-group">
-                    {locationRiskOptions.map((risk) => (
+            {/* On-Site Machinery */}
+            <h3>On-Site Machinery</h3>
+            <div className="checkbox-group">
+                {machineryOptions.map((machine) => (
+                    <div key={machine}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value={machine}
+                                checked={onSiteMachinery.includes(machine)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setOnSiteMachinery((prev) =>
+                                        prev.includes(value) ? prev.filter((m) => m !== value) : [...prev, value]
+                                    );
+                                }}
+                            />
+                            {machine}</label>
+                    </div>
+                ))}
+            </div>
+
+
+            <h3>Location Considerations</h3>
+            <div className="checkbox-group">
+                {locationRiskOptions.length > 0 ? (
+                    locationRiskOptions.map((risk) => (
                         <div key={risk}>
                             <label>
                                 <input
@@ -679,87 +701,90 @@ const RiskAssessmentForm = () => {
                                         );
                                     }}
                                 />
-                                {risk}</label>
-                        </div>
-                    ))}
-                </div>
-
-
-                {/* Tree Risks Section */}
-                <h3>Tree Risks</h3>
-                <div className="checkbox-group">
-                    {treeRiskOptions.map((risk) => (
-                        <div key={risk}>
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    value={risk}
-                                    checked={treeRisks.includes(risk)}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setTreeRisks((prev) =>
-                                            prev.includes(value)
-                                                ? prev.filter((r) => r !== value)
-                                                : [...prev, value]
-                                        );
-                                        // If "No remarks" is selected, clear all others and reset confirmation
-                                        if (value === 'No remarks' && e.target.checked) {
-                                            setTreeRisks(['No remarks']);
-                                            setTreeRisksApproved(false);
-                                        } else if (value !== 'No remarks' && e.target.checked) {
-                                            // Remove "No remarks" if any other risk is selected
-                                            setTreeRisks((prev) => prev.filter((r) => r !== 'No remarks'));
-                                        }
-                                    }}
-                                />
                                 {risk}
                             </label>
                         </div>
-                    ))}
-                </div>
-                {/* Confirmation checkbox appears if any tree risk other than "No remarks" is selected */}
-                {treeRisks.some((risk) => risk !== 'No remarks') && (
-                    <div style={{marginTop: '10px'}}>
+                    ))
+                ) : (
+                    <p>Loading location risks...</p> // Display loading message if conditions are not yet fetched
+                )}
+            </div>
+
+
+            <h3>Tree Risks</h3>
+            <div className="checkbox-group">
+                {treeRiskOptions.map((risk) => (
+                    <div key={risk}>
                         <label>
                             <input
                                 type="checkbox"
-                                checked={treeRisksApproved}
-                                onChange={(e) => setTreeRisksApproved(e.target.checked)}
+                                value={risk}
+                                checked={treeRisks.includes(risk)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setTreeRisks((prev) =>
+                                        prev.includes(value)
+                                            ? prev.filter((r) => r !== value)
+                                            : [...prev, value]
+                                    );
+                                    // If "No remarks" is selected, clear all others and reset confirmation
+                                    if (value === 'No remarks' && e.target.checked) {
+                                        setTreeRisks(['No remarks']);
+                                        setTreeRisksApproved(false);
+                                    } else if (value !== 'No remarks' && e.target.checked) {
+                                        // Remove "No remarks" if any other risk is selected
+                                        setTreeRisks((prev) => prev.filter((r) => r !== 'No remarks'));
+                                    }
+                                }}
                             />
-                            Can the work proceed safely despite the tree risks?
+                            {risk}
                         </label>
-                        {errors.treeRisks && <p style={{color: 'red'}}>{errors.treeRisks}</p>}
                     </div>
-                )}
+                ))}
+            </div>
+            {/* Confirmation checkbox appears if any tree risk other than "No remarks" is selected */}
+            {treeRisks.some((risk) => risk !== 'No remarks') && (
+                <div style={{marginTop: '10px'}}>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={treeRisksApproved}
+                            onChange={(e) => setTreeRisksApproved(e.target.checked)}
+                        />
+                        Can the work proceed safely despite the tree risks?
+                    </label>
+                    {errors.treeRisks && <p style={{color: 'red'}}>{errors.treeRisks}</p>}
+                </div>
+            )}
 
 
-                {/* New Field: Additional Risks */}
-                <h3>Additional Risks</h3>
-                <div className="form-group">
+            {/* New Field: Additional Risks */}
+            <h3>Additional Risks</h3>
+            <div className="form-group">
         <textarea
             placeholder="Enter additional risks if they present (optional)"
             value={additionalRisks}
             onChange={(e) => setAdditionalRisks(e.target.value)}
         />
-                </div>
+            </div>
 
-                {/* New Field: Safety Approval */}
-                <h3>Safety Confirmation</h3>
-                <div className="form-group">
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={safetyApproval}
-                            onChange={(e) => setSafetyApproval(e.target.checked)}
-                        />
-                        Everyone is aware of the plan, has appropriate PPE and work can be carried out safely.
-                    </label>
-                    {!safetyApproval && <p style={{color: 'red'}}>Safety confirmation is required.</p>}
-                </div>
-                {/* Submit Button */}
-                <button type="submit">Submit</button>
+            {/* New Field: Safety Approval */}
+            <h3>Safety Confirmation</h3>
+            <div className="form-group">
+                <label>
+                    <input
+                        type="checkbox"
+                        checked={safetyApproval}
+                        onChange={(e) => setSafetyApproval(e.target.checked)}
+                    />
+                    Everyone is aware of the plan, has appropriate PPE and work can be carried out safely.
+                </label>
+                {!safetyApproval && <p style={{color: 'red'}}>Safety confirmation is required.</p>}
+            </div>
+            {/* Submit Button */}
+            <button type="submit">Submit</button>
         </form>
-);
+    );
 };
 
 export default RiskAssessmentForm;

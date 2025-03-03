@@ -307,7 +307,6 @@ INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('20', 'Railroad', 'locat
 INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('21', 'Electricity wires', 'location');
 INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('22', 'Terrain', 'location');
 
-INSERT INTO `conditions` (`name`, `type`) VALUES ('No remarks', 'tree');
 INSERT INTO `conditions` (`name`, `type`) VALUES ('Broken/Dead/Loose branches', 'tree');
 INSERT INTO `conditions` (`name`, `type`) VALUES ('Dead tree', 'tree');
 INSERT INTO `conditions` (`name`, `type`) VALUES ('Defect root system', 'tree');
@@ -322,6 +321,10 @@ INSERT INTO `conditions` (`name`, `type`) VALUES ('Wildlife', 'tree');
 
    );
    ```
+
+DELETE FROM `conditions` WHERE (`id` = '35');
+DELETE FROM `conditions` WHERE (`id` = '1');
+
 
 ---
 
