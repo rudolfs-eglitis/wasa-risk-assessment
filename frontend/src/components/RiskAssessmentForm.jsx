@@ -610,6 +610,28 @@ const RiskAssessmentForm = () => {
                 ))}
             </div>
 
+            {/* On-Site Machinery */}
+            <h3>On-Site Machinery</h3>
+            <div className="checkbox-group">
+                {machineryOptions.map((machine) => (
+                    <div key={machine}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value={machine}
+                                checked={onSiteMachinery.includes(machine)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setOnSiteMachinery((prev) =>
+                                        prev.includes(value) ? prev.filter((m) => m !== value) : [...prev, value]
+                                    );
+                                }}
+                            />
+                            {machine}</label>
+                    </div>
+                ))}
+            </div>
+
             <h3>Weather Conditions</h3>
             <div className="checkbox-group">
                 {weatherOptions.map((condition) => (
@@ -660,28 +682,6 @@ const RiskAssessmentForm = () => {
                 </div>
             )}
 
-
-            {/* On-Site Machinery */}
-            <h3>On-Site Machinery</h3>
-            <div className="checkbox-group">
-                {machineryOptions.map((machine) => (
-                    <div key={machine}>
-                        <label>
-                            <input
-                                type="checkbox"
-                                value={machine}
-                                checked={onSiteMachinery.includes(machine)}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setOnSiteMachinery((prev) =>
-                                        prev.includes(value) ? prev.filter((m) => m !== value) : [...prev, value]
-                                    );
-                                }}
-                            />
-                            {machine}</label>
-                    </div>
-                ))}
-            </div>
 
 
             <h3>Location Considerations</h3>
