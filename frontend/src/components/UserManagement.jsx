@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaToggleOn, FaToggleOff, FaRedo } from 'react-icons/fa';  // Import icons
+
 
 import api from "../utils/api.js";
 
@@ -69,7 +71,6 @@ const UserManagement = () => {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone Number</th>
-                    <th>Role</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -79,13 +80,21 @@ const UserManagement = () => {
                         <td>{user.name}</td>
                         <td>{user.email}</td>
                         <td>{user.phone_number || '-'}</td>
-                        <td>{user.role}</td>
                         <td>
-                            <button onClick={() => resetPassword(user.id)}>Reset Password</button>
+                            <button
+                                onClick={() => resetPassword(user.id)}
+                                title="Reset Password"
+                            >
+                                <FaRedo/>
+                            </button>
                             {user.id !== 1 && user.id !== 2 && (
-                                <button onClick={() => handleToggleActivation(user.id)} style={{marginLeft: '10px'}}>
-                                    {user.role === 'inactive' ? 'Activate' : 'Deactivate'}
-                                </button>
+                                <button
+                                onClick={() => handleToggleActivation(user.id, user.role)}
+                            title={user.role === 'inactive' ? 'Activate User' : 'Deactivate User'}
+                            style={{ color: user.role === 'inactive' ? 'darkgreen' : 'darkred' }}
+                        >
+                            {user.role === 'inactive' ? <FaToggleOff /> : <FaToggleOn />}
+                        </button>
                             )}
                         </td>
                     </tr>

@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import AddUserForm from './components/AddUserForm';
 import UserManagement from './components/UserManagement';
+import ConditionManagement from './components/ConditionManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import RiskAssessmentForm from './components/RiskAssessmentForm';
@@ -74,7 +75,16 @@ const App = () => {
                 }
             />
 
-
+            <Route
+                path="/condition-management"
+                element={
+                    <ProtectedRoute requiredRole="admin">
+                        <Layout>
+                            <ConditionManagement />
+                        </Layout>
+                    </ProtectedRoute>
+                }
+            />
 
             <Route
                 path="/create-assessment"

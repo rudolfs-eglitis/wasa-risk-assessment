@@ -84,10 +84,21 @@ button {
 }
 
 button:hover {
-    background: #004d40;
+    background: #096858FF;
 }
 
+ul li button, td button {
+    padding: 0.5em;
+    background: none;
+    border: none;
+    color: #000;
+    cursor: pointer;
+    border-radius: 0;
+}
 
+ul li button:hover, td button:hover {
+    background: none;
+}
 
 
  main  {

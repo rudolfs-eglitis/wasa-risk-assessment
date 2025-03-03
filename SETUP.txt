@@ -263,6 +263,62 @@ CREATE TABLE assessments (
     FOREIGN KEY (created_by) REFERENCES users(id)
 );
 
+CREATE TABLE conditions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    type ENUM('weather', 'location', 'tree') NOT NULL
+);
+
+CREATE TABLE risks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    mitigation TEXT NOT NULL
+);
+
+CREATE TABLE condition_risks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    condition_id INT NOT NULL,
+    risk_id INT NOT NULL,
+    FOREIGN KEY (condition_id) REFERENCES conditions(id) ON DELETE CASCADE,
+    FOREIGN KEY (risk_id) REFERENCES risks(id) ON DELETE CASCADE
+);
+
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('1', 'Good', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('2', 'Wind', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('3', 'Rain', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('4', 'Snow', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('5', 'Hail', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('6', 'Lightning', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('7', 'Heat', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('8', 'Freezing cold', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('9', 'Ice', 'weather');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('10', 'Fog', 'weather');
+
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('11', 'Private garden', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('12', 'BRF', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('13', 'School/Kindergarten', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('14', 'Road', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('15', 'Walking/Cycling path', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('16', 'Parking area', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('17', 'Forest', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('18', 'Park', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('19', 'Construction Site', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('20', 'Railroad', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('21', 'Electricity wires', 'location');
+INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('22', 'Terrain', 'location');
+
+INSERT INTO `conditions` (`name`, `type`) VALUES ('No remarks', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Broken/Dead/Loose branches', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Dead tree', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Defect root system', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Fruiting bodies', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Fungi', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Cracks', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Mechanical damage', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Soil disturbance', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Cavities', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Included bark', 'tree');
+INSERT INTO `conditions` (`name`, `type`) VALUES ('Wildlife', 'tree');
 
    );
    ```

@@ -36,6 +36,8 @@ const RiskAssessmentForm = () => {
     const [safetyApproval, setSafetyApproval] = useState(false); // For PPE/plan confirmation
     const [teamLeader, setTeamLeader] = useState(null);
 
+    const [conditions, setConditions] = useState({});
+
     const [errors, setErrors] = useState({}); // Error state for form validation
 
 
@@ -177,6 +179,25 @@ const RiskAssessmentForm = () => {
         fetchUsers();
         fetchCurrentUser();
     }, []);
+
+
+
+    useEffect(() => {
+        const fetchConditions = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await api.get('/conditions', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setConditions(response.data);
+            } catch (error) {
+                console.error('Error fetching conditions:', error);
+            }
+        };
+
+        fetchConditions();
+    }, []);
+
 
     const fetchUsers = async () => {
         try {

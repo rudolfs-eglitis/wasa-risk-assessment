@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+
 import { Link, useNavigate } from 'react-router-dom';
+import { FaSignOutAlt, FaDoorOpen } from 'react-icons/fa';  // Import two logout icons
+
+
 import axios from 'axios';
 import api from "../utils/api.js";
 
@@ -35,6 +39,9 @@ const getTokenPayload = (token) => {
 
 
 const Header = () => {
+    const [isHovered, setIsHovered] = useState(false);
+
+
     const navigate = useNavigate();
 
     const token = localStorage.getItem('token');
@@ -62,11 +69,18 @@ const Header = () => {
                         <>
                             <li><Link to="/history">History</Link></li>
                             <li><Link to="/user-management">Users</Link></li>
+                            <li><Link to="/condition-management">Conditions</Link></li>
                         </>
                     )}
                 </ul>
             </nav>
-            <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
+            <button
+                onClick={handleLogout}
+                title="Logout"
+                className="logout-btn"
+            >
+                <FaSignOutAlt/>
+            </button>
         </header>
     );
 };

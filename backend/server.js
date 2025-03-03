@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes'); // Import user routes
+const conditionRoutes = require('./routes/conditionRoutes'); // Import user routes
 const assessmentRoutes = require('./routes/assessmentRoutes');
 const authenticateToken = require('./middleware/authenticateToken');
 const geocodeRoutes = require('./routes/geocodeRoutes');
@@ -23,7 +24,9 @@ app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
 // Routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/conditions', conditionRoutes);
 app.use('/assessments', assessmentRoutes);
+
 
 app.use('/api/geocode', geocodeRoutes);
 app.use('/protected', authenticateToken, (req, res) => {
