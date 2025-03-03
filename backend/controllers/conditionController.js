@@ -1,7 +1,18 @@
 const db = require('../config/database');
 
-// Get all conditions grouped by type
+// Get all conditions (ungrouped)
 exports.getAllConditions = async (req, res) => {
+    try {
+        const [conditions] = await db.query('SELECT * FROM conditions');
+        res.json(conditions);
+    } catch (error) {
+        console.error('Error fetching all conditions:', error);
+        res.status(500).json({ error: 'Failed to fetch all conditions.' });
+    }
+};
+
+// Get all conditions grouped by type
+exports.getGroupedConditions = async (req, res) => {
     try {
         const [conditions] = await db.query('SELECT * FROM conditions');
 
@@ -13,8 +24,41 @@ exports.getAllConditions = async (req, res) => {
 
         res.json(groupedConditions);
     } catch (error) {
-        console.error('Error fetching conditions:', error);
-        res.status(500).json({ error: 'Failed to fetch conditions.' });
+        console.error('Error fetching grouped conditions:', error);
+        res.status(500).json({ error: 'Failed to fetch grouped conditions.' });
+    }
+};
+
+// Get only weather conditions
+exports.getWeatherConditions = async (req, res) => {
+    try {
+        const [weatherConditions] = await db.query('SELECT * FROM conditions WHERE type = "weather"');
+        res.json(weatherConditions);
+    } catch (error) {
+        console.error('Error fetching weather conditions:', error);
+        res.status(500).json({ error: 'Failed to fetch weather conditions.' });
+    }
+};
+
+// Get only location conditions
+exports.getLocationConditions = async (req, res) => {
+    try {
+        const [locationConditions] = await db.query('SELECT * FROM conditions WHERE type = "location"');
+        res.json(locationConditions);
+    } catch (error) {
+        console.error('Error fetching location conditions:', error);
+        res.status(500).json({ error: 'Failed to fetch location conditions.' });
+    }
+};
+
+// Get only tree conditions
+exports.getTreeConditions = async (req, res) => {
+    try {
+        const [treeConditions] = await db.query('SELECT * FROM conditions WHERE type = "tree"');
+        res.json(treeConditions);
+    } catch (error) {
+        console.error('Error fetching tree conditions:', error);
+        res.status(500).json({ error: 'Failed to fetch tree conditions.' });
     }
 };
 
