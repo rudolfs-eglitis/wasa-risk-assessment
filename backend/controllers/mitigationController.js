@@ -1,6 +1,7 @@
 const db = require('../config/database');
 
 exports.createMitigation = async (req, res) => {
+    console.log('createMitigation called with:', req.body);
     try {
         const { name, type, conditionId } = req.body;
 
