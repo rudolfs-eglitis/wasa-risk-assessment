@@ -71,7 +71,7 @@ const ConditionManagement = () => {
     const handleAddMitigation = async (condition) => {
         try {
             const token = localStorage.getItem('token');
-            await api.post('/mitigations', {
+            await api.post('/mitigations/create', {
                 name: newMitigationName,
                 type: condition.type,
                 conditionId: condition.id,
