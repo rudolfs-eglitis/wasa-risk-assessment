@@ -127,8 +127,8 @@ exports.getConditionsWithMitigations = async (req, res) => {
         const [links] = await db.query(`
             SELECT cm.condition_id, m.id AS mitigation_id, m.name, m.type
             FROM condition_mitigations cm
-            JOIN mitigations m ON cm.mitigation_id = m.id
-        `);
+                     LEFT JOIN mitigations m ON cm.mitigation_id = m.id
+        `); // <-- Use LEFT JOIN to avoid failure if mitigations are missing
 
         const conditionMap = {};
         conditions.forEach(cond => {
@@ -136,7 +136,7 @@ exports.getConditionsWithMitigations = async (req, res) => {
         });
 
         links.forEach(link => {
-            if (conditionMap[link.condition_id]) {
+            if (link.mitigation_id && conditionMap[link.condition_id]) {
                 conditionMap[link.condition_id].mitigations.push({
                     id: link.mitigation_id,
                     name: link.name,
