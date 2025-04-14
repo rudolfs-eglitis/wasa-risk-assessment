@@ -119,3 +119,35 @@ exports.deleteCondition = async (req, res) => {
         res.status(500).json({ error: 'Failed to delete condition.' });
     }
 };
+
+exports.getConditionsWithMitigations = async (req, res) => {
+    try {
+        const [conditions] = await db.query('SELECT * FROM conditions ORDER BY type, name');
+
+        const [links] = await db.query(`
+            SELECT cm.condition_id, m.id AS mitigation_id, m.name, m.type
+            FROM condition_mitigations cm
+            JOIN mitigations m ON cm.mitigation_id = m.id
+        `);
+
+        const conditionMap = {};
+        conditions.forEach(cond => {
+            conditionMap[cond.id] = { ...cond, mitigations: [] };
+        });
+
+        links.forEach(link => {
+            if (conditionMap[link.condition_id]) {
+                conditionMap[link.condition_id].mitigations.push({
+                    id: link.mitigation_id,
+                    name: link.name,
+                    type: link.type,
+                });
+            }
+        });
+
+        res.json(Object.values(conditionMap));
+    } catch (err) {
+        console.error('Error fetching conditions with mitigations:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

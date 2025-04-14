@@ -353,18 +353,6 @@ const RiskAssessmentForm = () => {
 
     useEffect(() => {
         if (conditions.length > 0) {
-            // Extract only conditions of type "tree"
-            const treeConditions = conditions
-                .filter(condition => condition.type === "tree")
-                .map(condition => condition.name); // Assuming the condition object has a "name" property
-
-
-            setTreeRiskOptions(['No remarks', ...treeConditions]); // Always include "No remarks" as an option
-        }
-    }, [conditions]); // Run whenever conditions update
-
-    useEffect(() => {
-        if (conditions.length > 0) {
             const weatherConditions = conditions
                 .filter(condition => condition.type === "weather")
                 .map(condition => condition.name); // Assuming conditions have a "name" field
@@ -379,10 +367,21 @@ const RiskAssessmentForm = () => {
             const locationRiskOptions = conditions
                 .filter(condition => condition.type === "location")
                 .map(condition => condition.name); // Assuming conditions have a "name" field
-            setLocationRiskOptions(['Good', ...locationRiskOptions]);
+            setLocationRiskOptions(locationRiskOptions);
         }
     }, [conditions]); // Run whenever conditions update
 
+    useEffect(() => {
+        if (conditions.length > 0) {
+            // Extract only conditions of type "tree"
+            const treeConditions = conditions
+                .filter(condition => condition.type === "tree")
+                .map(condition => condition.name); // Assuming the condition object has a "name" property
+
+
+            setTreeRiskOptions(['No remarks', ...treeConditions]); // Always include "No remarks" as an option
+        }
+    }, [conditions]); // Run whenever conditions update
 
 
     const machineryOptions = [

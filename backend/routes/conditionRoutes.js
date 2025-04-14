@@ -8,7 +8,8 @@ const {
     getTreeConditions,
     addCondition,
     editCondition,
-    deleteCondition
+    deleteCondition,
+    getConditionsWithMitigations
 } = require('../controllers/conditionController');
 const authenticateToken = require('../middleware/authenticateToken');
 const requireAdmin = require('../middleware/requireAdmin');
@@ -18,6 +19,8 @@ router.get('/', authenticateToken, getGroupedConditions);
 router.get('/weather', authenticateToken, getWeatherConditions);
 router.get('/location', authenticateToken, getLocationConditions);
 router.get('/tree', authenticateToken, getTreeConditions);
+router.get('/with-mitigations', authenticateToken, getConditionsWithMitigations);
+
 
 router.post('/add', authenticateToken, requireAdmin, addCondition);
 router.put('/:id', authenticateToken, requireAdmin, editCondition);
