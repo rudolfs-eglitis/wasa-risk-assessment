@@ -14,6 +14,7 @@ const ConditionManagement = () => {
     const [editingMitigationId, setEditingMitigationId] = useState(null);
     const [editingMitigationName, setEditingMitigationName] = useState('');
 
+
     useEffect(() => {
         fetchConditions(viewType);
     }, [viewType]);
@@ -120,19 +121,37 @@ const ConditionManagement = () => {
         <div>
             <h2>Manage Conditions</h2>
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                <button onClick={() => setViewType('all')}>All</button>
-                <button onClick={() => setViewType('weather')}>Weather</button>
-                <button onClick={() => setViewType('location')}>Location</button>
-                <button onClick={() => setViewType('tree')}>Tree</button>
+            <div style={{display: 'flex', gap: '10px', marginBottom: '15px'}}>
+                <button onClick={() => {
+                    setViewType('all');
+                }}>All
+                </button>
+                <button onClick={() => {
+                    setViewType('weather');
+                    setNewCondition(prev => ({...prev, type: 'weather'}));
+                }}>Weather
+                </button>
+                <button onClick={() => {
+                    setViewType('location');
+                    setNewCondition(prev => ({...prev, type: 'location'}));
+                }}>Location
+                </button>
+                <button onClick={() => {
+                    setViewType('tree');
+                    setNewCondition(prev => ({...prev, type: 'tree'}));
+                }}>Tree
+                </button>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px'}}>
                 <input
                     placeholder="Condition Name"
-                    onChange={(e) => setNewCondition({ ...newCondition, name: e.target.value })}
+                    onChange={(e) => setNewCondition({...newCondition, name: e.target.value})}
                 />
-                <select onChange={(e) => setNewCondition({ ...newCondition, type: e.target.value })}>
+                <select
+                    value={newCondition.type}
+                    onChange={(e) => setNewCondition({...newCondition, type: e.target.value})}
+                >
                     <option value="weather">Weather</option>
                     <option value="location">Location</option>
                     <option value="tree">Tree</option>
@@ -149,34 +168,45 @@ const ConditionManagement = () => {
             ) : (
                 <ul>
                     {conditions.map((condition) => (
-                        <li key={condition.id} style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <li key={condition.id}
+                            style={{display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '1rem'}}>
+                            <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
                                 {condition.name}
-                                <button onClick={() => handleEditCondition(condition.id, condition.name, condition.type)} title="Edit condition">
-                                    <FaRegEdit />
+                                <button
+                                    onClick={() => handleEditCondition(condition.id, condition.name, condition.type)}
+                                    title="Edit condition">
+                                    <FaRegEdit/>
                                 </button>
                                 <button title="Add mitigation" onClick={() => setActiveAddMitigationId(condition.id)}>
-                                    <MdOutlineAddBox style={{ fontSize: '1.2rem' }} />
+                                    <MdOutlineAddBox style={{fontSize: '1.2rem'}}/>
                                 </button>
                                 <button onClick={() => handleDeleteCondition(condition.id)} title="Delete condition">
-                                    <FaRegTrashAlt />
+                                    <FaRegTrashAlt/>
                                 </button>
                             </div>
 
                             {condition.mitigations && condition.mitigations.length > 0 && (
-                                <ul style={{ marginLeft: '1rem', marginTop: '0.5rem' }}>
+                                <ul style={{marginLeft: '1rem', marginTop: '0.5rem'}}>
                                     {condition.mitigations.map((mitigation) => (
-                                        <li key={mitigation.id} style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <li key={mitigation.id} style={{
+                                            fontSize: '0.9rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px'
+                                        }}>
                                             {editingMitigationId === mitigation.id ? (
                                                 <>
                                                     <textarea
                                                         value={editingMitigationName}
                                                         onChange={(e) => setEditingMitigationName(e.target.value)}
                                                         rows={2}
-                                                        style={{ resize: 'none', width: '250px' }}
+                                                        style={{resize: 'none', width: '250px'}}
                                                     />
-                                                    <button onClick={() => handleSaveMitigationEdit(mitigation, condition.id)}><FaSave /></button>
-                                                    <button onClick={() => setEditingMitigationId(null)}><FaTimes /></button>
+                                                    <button
+                                                        onClick={() => handleSaveMitigationEdit(mitigation, condition.id)}>
+                                                        <FaSave/></button>
+                                                    <button onClick={() => setEditingMitigationId(null)}><FaTimes/>
+                                                    </button>
                                                 </>
                                             ) : (
                                                 <>
@@ -184,8 +214,9 @@ const ConditionManagement = () => {
                                                     <button onClick={() => {
                                                         setEditingMitigationId(mitigation.id);
                                                         setEditingMitigationName(mitigation.name);
-                                                    }}><MdModeEditOutline /></button>
-                                                    <button onClick={() => handleDeleteMitigation(mitigation.id)}><MdDeleteOutline /></button>
+                                                    }}><MdModeEditOutline/></button>
+                                                    <button onClick={() => handleDeleteMitigation(mitigation.id)}>
+                                                        <MdDeleteOutline/></button>
                                                 </>
                                             )}
                                         </li>
@@ -194,16 +225,16 @@ const ConditionManagement = () => {
                             )}
 
                             {activeAddMitigationId === condition.id && (
-                                <div style={{ marginLeft: '1rem', marginTop: '0.5rem' }}>
+                                <div style={{marginLeft: '1rem', marginTop: '0.5rem'}}>
                                     <textarea
                                         placeholder="New mitigation name"
                                         value={newMitigationName}
                                         onChange={(e) => setNewMitigationName(e.target.value)}
                                         rows={2}
-                                        style={{ resize: 'none', width: '250px' }}
+                                        style={{resize: 'none', width: '250px'}}
                                     />
-                                    <button onClick={() => handleAddMitigation(condition)}><FaSave /> Save</button>
-                                    <button onClick={() => setActiveAddMitigationId(null)}><FaTimes /> Cancel</button>
+                                    <button onClick={() => handleAddMitigation(condition)}><FaSave/> Save</button>
+                                    <button onClick={() => setActiveAddMitigationId(null)}><FaTimes/> Cancel</button>
                                 </div>
                             )}
                         </li>
