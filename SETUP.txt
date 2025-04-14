@@ -269,20 +269,22 @@ CREATE TABLE conditions (
     type ENUM('weather', 'location', 'tree') NOT NULL
 );
 
-CREATE TABLE risks (
+CREATE TABLE IF NOT EXISTS mitigations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    mitigation TEXT NOT NULL
+    type ENUM('weather', 'location', 'tree') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE condition_risks (
+CREATE TABLE IF NOT EXISTS condition_mitigations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     condition_id INT NOT NULL,
-    risk_id INT NOT NULL,
+    mitigation_id INT NOT NULL,
     FOREIGN KEY (condition_id) REFERENCES conditions(id) ON DELETE CASCADE,
-    FOREIGN KEY (risk_id) REFERENCES risks(id) ON DELETE CASCADE
+    FOREIGN KEY (mitigation_id) REFERENCES mitigations(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_condition_mitigation (condition_id, mitigation_id)
 );
-
 INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('1', 'Good', 'weather');
 INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('2', 'Wind', 'weather');
 INSERT INTO `conditions` (`id`, `name`, `type`) VALUES ('3', 'Rain', 'weather');

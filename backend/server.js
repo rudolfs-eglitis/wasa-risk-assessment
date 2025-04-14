@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from React (frontend build directory)
-app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
+app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
 
 // Routes
 app.use('/auth', authRoutes);
@@ -37,7 +37,7 @@ app.use('/protected', authenticateToken, (req, res) => {
 
 // Catch-all route to serve React's index.html for non-API routes
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
 });
 
 // Start server
