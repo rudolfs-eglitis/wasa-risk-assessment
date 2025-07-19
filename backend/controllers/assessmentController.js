@@ -90,47 +90,7 @@ exports.createAssessment = async (req, res) => {
     }
 };
 
-// Get today's assessments for the logged-in user
-exports.getTodayAssessments = async (req, res) => {
-    try {
-        const userId = req.user.id;
 
-        const [assessments] = await db.query(
-            `
-                SELECT a.*, u1.name AS created_by_name, u2.name AS team_leader_name
-                FROM assessments a
-                         LEFT JOIN users u1 ON a.created_by = u1.id
-                         LEFT JOIN users u2 ON a.team_leader = u2.id
-                WHERE (a.created_by = ? OR JSON_CONTAINS(a.on_site_arborists, CAST(? AS JSON)))
-                  AND DATE(a.created_at) = CURDATE()
-            `,
-            [userId, JSON.stringify(userId)]
-        );
-
-        // Fetch user data for mapping arborist IDs to names
-        const [users] = await db.query('SELECT id, name FROM users');
-        const userMap = users.reduce((acc, user) => {
-            acc[String(user.id)] = user.name;
-            return acc;
-        }, {});
-
-        const mappedAssessments = assessments.map((assessment) => ({
-            ...assessment,
-            on_site_arborists: safeParse(assessment.on_site_arborists).map(
-                (id) => userMap[String(id)] || `Unknown User (ID: ${id})`
-            ),
-            weather_conditions: safeParse(assessment.weather_conditions),
-            methods_of_work: safeParse(assessment.methods_of_work),
-            location_risks: safeParse(assessment.location_risks),
-            tree_risks: safeParse(assessment.tree_risks),
-        }));
-
-        res.json(mappedAssessments);
-    } catch (error) {
-        console.error("Error fetching today's assessments:", error.message);
-        res.status(500).json({ error: 'Failed to fetch assessments.' });
-    }
-};
 
 exports.getAssessmentHistory = async (req, res) => {
     try {
@@ -216,6 +176,80 @@ const fetchConditionsWithMitigationsForAssessment = async (conditionsList, type)
     }
 
     return Object.values(conditionMap);
+};
+
+// Get today's assessments for the logged-in user
+exports.getTodayAssessments = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        // Fetch today's assessments
+        const [assessments] = await db.query(
+            `
+                SELECT a.*, u1.name AS created_by_name, u2.name AS team_leader_name
+                FROM assessments a
+                         LEFT JOIN users u1 ON a.created_by = u1.id
+                         LEFT JOIN users u2 ON a.team_leader = u2.id
+                WHERE (a.created_by = ? OR JSON_CONTAINS(a.on_site_arborists, CAST(? AS JSON)))
+                  AND DATE(a.created_at) = CURDATE()
+            `,
+            [userId, JSON.stringify(userId)]
+        );
+
+        // Fetch all users for mapping arborist IDs to names
+        const [users] = await db.query('SELECT id, name FROM users');
+        const userMap = users.reduce((acc, user) => {
+            acc[String(user.id)] = user.name;
+            return acc;
+        }, {});
+
+        // Map and enrich each assessment
+        const enriched = await Promise.all(assessments.map(async (assessment) => {
+            // Basic access control
+            const isCreator = assessment.created_by === userId;
+            const crew = safeParse(assessment.on_site_arborists);
+            const isInCrew = crew.includes(userId);
+
+            if (!isAdmin && !isCreator && !isInCrew) {
+                return null; // Skip this one
+            }
+
+            // Parse and enrich
+            const arboristIds = crew;
+            assessment.weather_conditions = safeParse(assessment.weather_conditions);
+            assessment.methods_of_work = safeParse(assessment.methods_of_work);
+            assessment.location_risks = safeParse(assessment.location_risks);
+            assessment.tree_risks = safeParse(assessment.tree_risks);
+
+            assessment.on_site_arborists = arboristIds.map(
+                (id) => userMap[String(id)] || `Unknown User (ID: ${id})`
+            );
+
+            assessment.location_conditions = await fetchConditionsWithMitigationsForAssessment(
+                assessment.location_risks,
+                'location'
+            );
+            assessment.tree_conditions = await fetchConditionsWithMitigationsForAssessment(
+                assessment.tree_risks,
+                'tree'
+            );
+            assessment.weather_conditions_details = await fetchConditionsWithMitigationsForAssessment(
+                assessment.weather_conditions,
+                'weather'
+            );
+
+            return assessment;
+        }));
+
+        // Remove nulls (filtered by access control)
+        const filtered = enriched.filter(Boolean);
+
+        res.json(filtered);
+    } catch (error) {
+        console.error("Error fetching today's assessments:", error.message);
+        res.status(500).json({ error: 'Failed to fetch assessments.' });
+    }
 };
 
 

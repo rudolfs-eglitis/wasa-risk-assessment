@@ -51,12 +51,13 @@ const TodayAssessments = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             alert('Assessment deleted successfully.');
-            fetchTodayAssessments(); // Refresh the list
+            fetchTodayAssessments();
         } catch (error) {
             console.error("Error deleting assessment:", error.response?.data || error.message);
             alert("Failed to delete assessment.");
         }
     };
+
 
     return (
         <div className="assessment-today">
@@ -67,9 +68,7 @@ const TodayAssessments = () => {
                     <p>
                         <FaClock style={{ marginRight: '6px' }} />
                         {new Date(latestAssessment.created_at).toLocaleString('en-GB', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
+                            hour: '2-digit', minute: '2-digit', hour12: false
                         })}
                         &nbsp;|&nbsp;
                         <FaUser style={{ marginRight: '6px' }} />
@@ -93,9 +92,7 @@ const TodayAssessments = () => {
                             height="250"
                             frameBorder="0"
                             style={{ border: 0 }}
-                            src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_API_KEY}&q=${encodeURIComponent(
-                                latestAssessment.job_site_address
-                            )}`}
+                            src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_API_KEY}&q=${encodeURIComponent(latestAssessment.job_site_address)}`}
                             allowFullScreen
                         />
                     </div>
@@ -144,41 +141,52 @@ const TodayAssessments = () => {
                     <p><strong>Methods of Work:</strong> {latestAssessment.methods_of_work.join(', ')}</p>
 
                     <h3>Tree Risks and Mitigations</h3>
-                    <ul>
-                        {latestAssessment.tree_conditions?.length > 0
-                            ? latestAssessment.tree_conditions.map(cond => (
-                                <li key={cond.id}>
-                                    <strong>{cond.name}:</strong> {cond.mitigations?.length > 0 ? cond.mitigations.map(m => m.name).join(', ') : 'No mitigations listed.'}
+                    {latestAssessment.tree_conditions?.length > 0 ? (
+                        <ul>
+                            {latestAssessment.tree_conditions.map((condition) => (
+                                <li key={condition.id}>
+                                    <strong>{condition.name}:</strong>{' '}
+                                    {condition.mitigations?.length > 0
+                                        ? condition.mitigations.map((m) => m.name).join(', ')
+                                        : 'No mitigations listed.'}
                                 </li>
-                            ))
-                            : <p>No tree risks specified.</p>
-                        }
-                    </ul>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No tree risks specified.</p>
+                    )}
 
                     <h3>Location Risks and Mitigations</h3>
-                    <ul>
-                        {latestAssessment.location_conditions?.length > 0
-                            ? latestAssessment.location_conditions.map(cond => (
-                                <li key={cond.id}>
-                                    <strong>{cond.name}:</strong> {cond.mitigations?.length > 0 ? cond.mitigations.map(m => m.name).join(', ') : 'No mitigations listed.'}
+                    {latestAssessment.location_conditions?.length > 0 ? (
+                        <ul>
+                            {latestAssessment.location_conditions.map((condition) => (
+                                <li key={condition.id}>
+                                    <strong>{condition.name}:</strong>{' '}
+                                    {condition.mitigations?.length > 0
+                                        ? condition.mitigations.map((m) => m.name).join(', ')
+                                        : 'No mitigations listed.'}
                                 </li>
-                            ))
-                            : <p>No location risks specified.</p>
-                        }
-                    </ul>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No location risks specified.</p>
+                    )}
 
                     <h3>Weather Risks and Mitigations</h3>
-                    <ul>
-                        {latestAssessment.weather_conditions_details?.length > 0
-                            ? latestAssessment.weather_conditions_details.map(cond => (
-                                <li key={cond.id}>
-                                    <strong>{cond.name}:</strong> {cond.mitigations?.length > 0 ? cond.mitigations.map(m => m.name).join(', ') : 'No mitigations listed.'}
+                    {latestAssessment.weather_conditions_details?.length > 0 ? (
+                        <ul>
+                            {latestAssessment.weather_conditions_details.map((condition) => (
+                                <li key={condition.id}>
+                                    <strong>{condition.name}:</strong>{' '}
+                                    {condition.mitigations?.length > 0
+                                        ? condition.mitigations.map((m) => m.name).join(', ')
+                                        : 'No mitigations listed.'}
                                 </li>
-                            ))
-                            : <p>No weather risks specified.</p>
-                        }
-                    </ul>
-
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No weather risks specified.</p>
+                    )}
                     <h3>Additional Risks:</h3>
                     <p>{latestAssessment.additional_risks || 'None'}</p>
 
@@ -205,21 +213,35 @@ const TodayAssessments = () => {
                             const isToday = moment(assessment.created_at).isSame(moment(), 'day');
                             const canDelete = isToday && parseInt(assessment.created_by) === parseInt(currentUser);
                             return (
-                                <li key={assessment.id}>
-                                    <Link to={`/assessments/${assessment.id}`}>
-                                        {assessment.job_site_address.split(',')[0]} - {new Date(assessment.created_at).toLocaleTimeString()}
-                                        {assessment.created_by_name && ` - Created By: ${assessment.created_by_name}`}
+                                <li key={assessment.id} style={{marginBottom: '10px'}}>
+                                    <Link to={`/assessments/show/${assessment.id}`}>
+                                        {assessment.job_site_address.split(',')[0]}
                                     </Link>
+                                    <span style={{marginLeft: '10px', fontSize: '0.9em', color: '#555'}}>
+                                        <FaClock style={{marginRight: '4px'}}/>
+                                        {new Date(assessment.created_at).toLocaleTimeString('en-GB', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: false
+                                        })}
+                                    </span>
+                                    <span style={{marginLeft: '10px', fontSize: '0.9em', color: '#555'}}>
+                                        <FaUser style={{marginRight: '4px'}}/>
+                                        {assessment.created_by_name || 'Unknown'}
+                                    </span>
+
                                     {canDelete && (
                                         <button onClick={() => handleDelete(assessment.id)}
-                                                style={{ marginLeft: '10px' }}>
+                                                style={{marginLeft: '10px'}}>
                                             Delete
                                         </button>
                                     )}
                                 </li>
+
                             );
                         })}
                     </ul>
+
                 </div>
             )}
         </div>
