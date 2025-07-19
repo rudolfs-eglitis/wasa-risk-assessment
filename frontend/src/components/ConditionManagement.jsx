@@ -119,7 +119,7 @@ const ConditionManagement = () => {
 
     return (
         <div>
-            <h2>Manage Conditions</h2>
+            <h2>Risk management</h2>
 
             <div style={{display: 'flex', gap: '10px', marginBottom: '15px'}}>
                 <button onClick={() => {
@@ -156,9 +156,10 @@ const ConditionManagement = () => {
                     <option value="location">Location</option>
                     <option value="tree">Tree</option>
                 </select>
+                <br />
                 <p>
                     <button onClick={handleAddCondition} title="Add condition">
-                        Add condition
+                        Add
                     </button>
                 </p>
             </div>
@@ -227,7 +228,7 @@ const ConditionManagement = () => {
                             {activeAddMitigationId === condition.id && (
                                 <div style={{marginLeft: '1rem', marginTop: '0.5rem'}}>
                                     <textarea
-                                        placeholder="New mitigation name"
+                                        placeholder="Enter risks and mitigations"
                                         value={newMitigationName}
                                         onChange={(e) => setNewMitigationName(e.target.value)}
                                         rows={2}

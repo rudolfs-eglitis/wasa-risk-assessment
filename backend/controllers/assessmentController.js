@@ -1,6 +1,8 @@
 const db = require('../config/database');
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const moment = require('moment');
+const { getConditionsWithMitigationsByNames } = require('./conditionController');
+
 
 // Helper function to safely parse JSON
 const safeParse = (str) => {
@@ -130,17 +132,34 @@ exports.getTodayAssessments = async (req, res) => {
     }
 };
 
-// Get assessment history grouped by date (address, created_at, id)
 exports.getAssessmentHistory = async (req, res) => {
     try {
-        // Fetch only required fields from the database.
-        const [assessments] = await db.query(`
-      SELECT id, job_site_address AS address, created_at
-      FROM assessments
-      ORDER BY created_at DESC
-    `);
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin'; // Adjust this depending on how your roles are stored
 
-        // Group assessments by date (YYYY-MM-DD) using local time
+        let assessmentsQuery = `
+            SELECT
+                a.id,
+                a.job_site_address AS address,
+                a.created_at,
+                u.name AS created_by
+            FROM assessments a
+            LEFT JOIN users u ON a.created_by = u.id
+        `;
+
+        const queryParams = [];
+
+        if (!isAdmin) {
+            assessmentsQuery += `
+                WHERE a.created_by = ? OR JSON_CONTAINS(a.on_site_arborists, CAST(? AS JSON))
+            `;
+            queryParams.push(userId, JSON.stringify(userId));
+        }
+
+        assessmentsQuery += ' ORDER BY a.created_at DESC';
+
+        const [assessments] = await db.query(assessmentsQuery, queryParams);
+
         const groupedByDate = assessments.reduce((acc, assessment) => {
             const dateKey = moment.utc(assessment.created_at).local().format('YYYY-MM-DD');
             if (!acc[dateKey]) {
@@ -148,8 +167,9 @@ exports.getAssessmentHistory = async (req, res) => {
             }
             acc[dateKey].push({
                 id: assessment.id,
-                address: assessment.address, // job_site_address is stored as plain string
+                address: assessment.address,
                 created_at: assessment.created_at,
+                created_by: assessment.created_by || 'Unknown'
             });
             return acc;
         }, {});
@@ -161,14 +181,51 @@ exports.getAssessmentHistory = async (req, res) => {
     }
 };
 
-// Get a single assessment by ID, including creator and team leader names
+const fetchConditionsWithMitigationsForAssessment = async (conditionsList, type) => {
+    if (!conditionsList || conditionsList.length === 0) return [];
+
+    const placeholders = conditionsList.map(() => '?').join(',');
+    const [rows] = await db.query(
+        `
+        SELECT c.*, cm.mitigation_id, m.name AS mitigation_name
+        FROM conditions c
+        LEFT JOIN condition_mitigations cm ON cm.condition_id = c.id
+        LEFT JOIN mitigations m ON cm.mitigation_id = m.id
+        WHERE c.name IN (${placeholders}) AND c.type = ?
+        `,
+        [...conditionsList, type]
+    );
+
+    // Group by condition ID
+    const conditionMap = {};
+    for (const row of rows) {
+        if (!conditionMap[row.id]) {
+            conditionMap[row.id] = {
+                id: row.id,
+                name: row.name,
+                type: row.type,
+                mitigations: []
+            };
+        }
+        if (row.mitigation_id) {
+            conditionMap[row.id].mitigations.push({
+                id: row.mitigation_id,
+                name: row.mitigation_name
+            });
+        }
+    }
+
+    return Object.values(conditionMap);
+};
+
+
 exports.getAssessmentById = async (req, res) => {
     try {
-        console.log('Authenticated user:', req.user); // Debug line
-
         const { id } = req.params;
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
 
-        // Join the assessments table with the users table for creator and team leader names
+        // Fetch the assessment and related user info
         const query = `
             SELECT a.*, u1.name AS created_by_name, u2.name AS team_leader_name
             FROM assessments a
@@ -184,6 +241,17 @@ exports.getAssessmentById = async (req, res) => {
 
         const assessment = rows[0];
 
+        // Check access if user is not admin
+        if (!isAdmin) {
+            const isCreator = assessment.created_by === userId;
+            const crew = JSON.parse(assessment.on_site_arborists || '[]');
+            const isInCrew = crew.includes(userId);
+
+            if (!isCreator && !isInCrew) {
+                return res.status(403).json({ error: 'Access denied: not part of this assessment.' });
+            }
+        }
+
         // Parse JSON fields
         const arboristIds = safeParse(assessment.on_site_arborists);
         assessment.weather_conditions = safeParse(assessment.weather_conditions);
@@ -191,27 +259,39 @@ exports.getAssessmentById = async (req, res) => {
         assessment.location_risks = safeParse(assessment.location_risks);
         assessment.tree_risks = safeParse(assessment.tree_risks);
 
-        // Fetch user data for mapping arborist IDs to names
+        // Map arborist IDs to names
         const [users] = await db.query('SELECT id, name FROM users');
         const userMap = users.reduce((acc, user) => {
             acc[String(user.id)] = user.name;
             return acc;
         }, {});
 
-        // Map on_site_arborists IDs to names
         assessment.on_site_arborists = arboristIds.map(
             (id) => userMap[String(id)] || `Unknown User (ID: ${id})`
         );
 
-        // Optionally, if you have team leader and created_by names stored via JOIN in your query,
-        // they would already be available. Otherwise, you can handle them similarly.
+        assessment.location_conditions = await fetchConditionsWithMitigationsForAssessment(
+            assessment.location_risks,
+            'location'
+        );
+        assessment.tree_conditions = await fetchConditionsWithMitigationsForAssessment(
+            assessment.tree_risks,
+            'tree'
+        );
+        assessment.weather_conditions_details = await fetchConditionsWithMitigationsForAssessment(
+            assessment.weather_conditions,
+            'weather'
+        );
 
+
+        console.log(JSON.stringify(assessment, null, 2))
         res.json(assessment);
     } catch (error) {
         console.error('Error fetching assessment:', error.message);
         res.status(500).json({ error: 'Failed to fetch assessment.' });
     }
 };
+
 
 exports.deleteTodayAssessment = async (req, res) => {
     try {

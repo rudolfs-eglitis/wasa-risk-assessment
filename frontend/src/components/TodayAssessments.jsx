@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import api from '../utils/api'; // Use the global API instance
+import api from '../utils/api';
 import moment from 'moment';
 import Layout from './Layout';
-import {Link} from "react-router-dom";
-
+import { Link } from 'react-router-dom';
+import {
+    FaMapMarkerAlt,
+    FaPhone,
+    FaClock,
+    FaUser
+} from 'react-icons/fa';
 
 const TodayAssessments = () => {
     const [assessments, setAssessments] = useState([]);
@@ -11,7 +16,6 @@ const TodayAssessments = () => {
     const [otherAssessments, setOtherAssessments] = useState([]);
     const [error, setError] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
-
 
     useEffect(() => {
         fetchTodayAssessments();
@@ -26,17 +30,6 @@ const TodayAssessments = () => {
             const response = await api.get('/assessments/today', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-
-            console.log("Response data:", response.data);
-
-            // Check if response.data is an array
-            if (!Array.isArray(response.data)) {
-                console.error("Expected an array but got:", response.data);
-                // Optionally, handle this case by wrapping it in an array:
-                setAssessments(response.data);
-            } else {
-                setError('Unexpected response format.');
-            }
 
             const data = Array.isArray(response.data) ? response.data : [];
             if (data.length > 0) {
@@ -71,57 +64,131 @@ const TodayAssessments = () => {
 
             {latestAssessment ? (
                 <div className="assessment-detail">
-                    <h3><Link to={`/assessments/${latestAssessment.id}`}>
-                        Latest Assessment
-                    </Link></h3>
-                    <p><strong>ID:</strong> {latestAssessment.id}</p>
+                    <p>
+                        <FaClock style={{ marginRight: '6px' }} />
+                        {new Date(latestAssessment.created_at).toLocaleString('en-GB', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        })}
+                        &nbsp;|&nbsp;
+                        <FaUser style={{ marginRight: '6px' }} />
+                        {latestAssessment.created_by_name || 'Unknown'}
+                    </p>
                     <p>
                         <strong>Job Site Address:</strong>{' '}
                         <a
-                            href={`https://www.google.com/maps?q=${encodeURIComponent(
-                                latestAssessment.job_site_address
-                            )}`}
+                            href={`https://www.google.com/maps?q=${encodeURIComponent(latestAssessment.job_site_address)}`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            style={{ marginLeft: '10px' }}
                         >
                             {latestAssessment.job_site_address}
                         </a>
                     </p>
-                    <p><strong>Created At:</strong> {new Date(latestAssessment.created_at).toLocaleString()}</p>
-                    <p><strong>Team Leader:</strong> {latestAssessment.team_leader_name || 'Not specified'}</p>
-                    <p><strong>Created By:</strong> {latestAssessment.created_by_name || 'Unknown'}</p>
+                    <div style={{ marginTop: '1rem' }}>
+                        <iframe
+                            title="Google Maps"
+                            width="100%"
+                            height="250"
+                            frameBorder="0"
+                            style={{ border: 0 }}
+                            src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_API_KEY}&q=${encodeURIComponent(
+                                latestAssessment.job_site_address
+                            )}`}
+                            allowFullScreen
+                        />
+                    </div>
+
+                    {latestAssessment.job_site_lat && latestAssessment.job_site_lng && (
+                        <p>
+                            <strong>GPS Coordinates:</strong>{' '}
+                            <a
+                                href={`https://www.google.com/maps?q=${latestAssessment.job_site_lat},${latestAssessment.job_site_lng}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="View on Map"
+                            >
+                                {latestAssessment.job_site_lat}, {latestAssessment.job_site_lng} <FaMapMarkerAlt />
+                            </a>
+                        </p>
+                    )}
+
                     <p>
-                        <strong>Crew:</strong> {latestAssessment.on_site_arborists.join(', ')}
-                    </p>
-                    <p><strong>Car Key Location:</strong> {latestAssessment.car_key_location}</p>
-                    <p>
-                        <strong>Nearest Hospital:</strong> {latestAssessment.nearest_hospital_name}{' '}
+                        <strong>Nearest Hospital:</strong>
                         {latestAssessment.nearest_hospital_address && (
                             <a
                                 href={`https://www.google.com/maps?q=${encodeURIComponent(latestAssessment.nearest_hospital_address)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                style={{ marginLeft: '8px' }}
+                                title="View on Map"
                             >
-                                (View on Map)
+                                {latestAssessment.nearest_hospital_name} <FaMapMarkerAlt />
                             </a>
                         )}
                         {latestAssessment.nearest_hospital_phone && (
-                            <>
-                                {' '}<a href={`tel:${latestAssessment.nearest_hospital_phone}`}>Call</a>
-                            </>
+                            <a
+                                href={`tel:${latestAssessment.nearest_hospital_phone}`}
+                                style={{ marginLeft: '8px' }}
+                                title="Call Hospital"
+                            >
+                                <FaPhone />
+                            </a>
                         )}
                     </p>
-                    <p><strong>Weather Conditions:</strong> {latestAssessment.weather_conditions.join(', ')}</p>
+
+                    <p><strong>Car Key and First Aid Location:</strong> {latestAssessment.car_key_location || 'Not specified'}</p>
+                    <p><strong>Team Leader:</strong> {latestAssessment.team_leader_name || 'Not specified'}</p>
+                    <p><strong>Crew:</strong> {latestAssessment.on_site_arborists.join(', ')}</p>
                     <p><strong>Methods of Work:</strong> {latestAssessment.methods_of_work.join(', ')}</p>
-                    <p><strong>Location Risks:</strong> {latestAssessment.location_risks.join(', ')}</p>
-                    <p><strong>Tree Risks:</strong> {latestAssessment.tree_risks.join(', ')}</p>
-                    <p><strong>Additional Risks:</strong> {latestAssessment.additional_risks || 'None'}</p>
+
+                    <h3>Tree Risks and Mitigations</h3>
+                    <ul>
+                        {latestAssessment.tree_conditions?.length > 0
+                            ? latestAssessment.tree_conditions.map(cond => (
+                                <li key={cond.id}>
+                                    <strong>{cond.name}:</strong> {cond.mitigations?.length > 0 ? cond.mitigations.map(m => m.name).join(', ') : 'No mitigations listed.'}
+                                </li>
+                            ))
+                            : <p>No tree risks specified.</p>
+                        }
+                    </ul>
+
+                    <h3>Location Risks and Mitigations</h3>
+                    <ul>
+                        {latestAssessment.location_conditions?.length > 0
+                            ? latestAssessment.location_conditions.map(cond => (
+                                <li key={cond.id}>
+                                    <strong>{cond.name}:</strong> {cond.mitigations?.length > 0 ? cond.mitigations.map(m => m.name).join(', ') : 'No mitigations listed.'}
+                                </li>
+                            ))
+                            : <p>No location risks specified.</p>
+                        }
+                    </ul>
+
+                    <h3>Weather Risks and Mitigations</h3>
+                    <ul>
+                        {latestAssessment.weather_conditions_details?.length > 0
+                            ? latestAssessment.weather_conditions_details.map(cond => (
+                                <li key={cond.id}>
+                                    <strong>{cond.name}:</strong> {cond.mitigations?.length > 0 ? cond.mitigations.map(m => m.name).join(', ') : 'No mitigations listed.'}
+                                </li>
+                            ))
+                            : <p>No weather risks specified.</p>
+                        }
+                    </ul>
+
+                    <h3>Additional Risks:</h3>
+                    <p>{latestAssessment.additional_risks || 'None'}</p>
+
                     <p>
                         <strong>All members of the crew is aware of the work plan, has appropriate PPE and work can be
                             carried out safely:</strong> {latestAssessment.safety_confirmation ? 'Yes' : 'No'}
                     </p>
+
                     {parseInt(latestAssessment.created_by) === parseInt(currentUser) && (
-                        <button onClick={() => handleDelete(latestAssessment.id)} style={{marginLeft: '10px'}}>
+                        <button onClick={() => handleDelete(latestAssessment.id)} style={{ marginLeft: '10px' }}>
                             Delete
                         </button>
                     )}
@@ -130,14 +197,11 @@ const TodayAssessments = () => {
                 <p>No assessments found for today.</p>
             )}
 
-            {/* Display links for other assessments */}
             {otherAssessments.length > 0 && (
                 <div className="other-assessments">
                     <h3>Earlier</h3>
                     <ul>
                         {otherAssessments.map((assessment) => {
-                            // Determine if deletion is allowed:
-                            // It is allowed if the assessment was created today and by the current user.
                             const isToday = moment(assessment.created_at).isSame(moment(), 'day');
                             const canDelete = isToday && parseInt(assessment.created_by) === parseInt(currentUser);
                             return (
@@ -148,7 +212,7 @@ const TodayAssessments = () => {
                                     </Link>
                                     {canDelete && (
                                         <button onClick={() => handleDelete(assessment.id)}
-                                                style={{marginLeft: '10px'}}>
+                                                style={{ marginLeft: '10px' }}>
                                             Delete
                                         </button>
                                     )}

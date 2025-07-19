@@ -6,6 +6,8 @@ import 'react-calendar/dist/Calendar.css';
 import './AssessmentHistory.css';
 import moment from 'moment';
 import api from "../utils/api.js";
+import { FaClock, FaUser } from 'react-icons/fa';
+
 
 const AssessmentHistory = () => {
     const [history, setHistory] = useState({});
@@ -66,22 +68,30 @@ const AssessmentHistory = () => {
             </div>
 
             {/* List of Assessments */}
-            <div className="selected-date-assessments">
                 <h3>Assessments for {selectedDate.toDateString()}</h3>
                 {assessmentsForSelectedDate.length > 0 ? (
                     <ul>
                         {assessmentsForSelectedDate.map((assessment) => (
                             <li key={assessment.id}>
-                                <a href={`/assessments/${assessment.id}`} target="_blank" rel="noopener noreferrer">
-                                    {assessment.address} - {new Date(assessment.created_at).toLocaleString()}
+                                <a href={`/assessments/show/${assessment.id}`} target="_blank"
+                                   rel="noopener noreferrer">
+                                    {assessment.address}
+                                    &nbsp;&nbsp;
+                                    <FaClock/> {new Date(assessment.created_at).toLocaleTimeString('sv-SE', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                                    &nbsp;&nbsp;
+                                    <FaUser/> {assessment.created_by}
                                 </a>
                             </li>
                         ))}
                     </ul>
+
+
                 ) : (
                     <p>No assessments found for this date.</p>
                 )}
-            </div>
         </div>
     );
 };

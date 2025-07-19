@@ -22,7 +22,10 @@ router.get('/today', authenticateToken, getTodayAssessments);
 // Route for history
 router.get('/history', authenticateToken, requireAdmin, getAssessmentHistory);
 
+router.get('show/:id', authenticateToken, getAssessmentById);
+
 router.get('/:id', authenticateToken, getAssessmentById);
+
 
 router.delete('/:id', authenticateToken, deleteTodayAssessment);
 

@@ -151,3 +151,38 @@ exports.getConditionsWithMitigations = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+// Get all conditions with mitigations that match a list of names and type
+exports.getConditionsWithMitigationsByNames = async (names, type) => {
+    const [conditions] = await db.query(
+        'SELECT * FROM conditions WHERE name IN (?) AND type = ?',
+        [names, type]
+    );
+
+    if (conditions.length === 0) return [];
+
+    const conditionIds = conditions.map(c => c.id);
+    const [links] = await db.query(`
+        SELECT cm.condition_id, m.id AS mitigation_id, m.name, m.type
+        FROM condition_mitigations cm
+        JOIN mitigations m ON cm.mitigation_id = m.id
+        WHERE cm.condition_id IN (?)
+    `, [conditionIds]);
+
+    const map = {};
+    conditions.forEach(cond => {
+        map[cond.id] = { ...cond, mitigations: [] };
+    });
+
+    links.forEach(link => {
+        if (map[link.condition_id]) {
+            map[link.condition_id].mitigations.push({
+                id: link.mitigation_id,
+                name: link.name,
+                type: link.type,
+            });
+        }
+    });
+
+    return Object.values(map);
+};
