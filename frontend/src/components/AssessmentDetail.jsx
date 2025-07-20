@@ -3,8 +3,9 @@ import api from '../utils/api'; // Use the global API instance
 
 import { useParams } from 'react-router-dom';
 
-import { FaMapMarkerAlt, FaPhone, FaClock, FaUser, } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaPhone, FaClock, FaUser, FaFilePdf } from 'react-icons/fa';
 
+import { Link } from 'react-router-dom';
 
 const AssessmentDetail = () => {
     const { id } = useParams();
@@ -28,6 +29,34 @@ const AssessmentDetail = () => {
 
         fetchAssessment();
     }, [id]);
+
+    const downloadPdf = async (id) => {
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch(`/assessments/pdf/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('PDF download failed');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wasa-risk-assessment-${id}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Could not download PDF');
+            console.error(err);
+        }
+    };
+
 
     if (error) return <div>{error}</div>;
     if (!assessment) return <div>Loading...</div>;
@@ -185,6 +214,11 @@ const AssessmentDetail = () => {
             <p>
                 <strong>All members of the crew is aware of the work plan, has appropriate PPE and work can be carried
                     out safely:</strong> {assessment.safety_confirmation ? 'Yes' : 'No'}
+            </p>
+            <p>
+                <button onClick={() => downloadPdf(assessment.id)}>
+                    <FaFilePdf/> Download PDF
+                </button>
             </p>
         </div>
     );

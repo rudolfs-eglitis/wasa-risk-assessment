@@ -4,7 +4,8 @@ const {
     getAssessmentHistory,
     getAssessmentById,
     createAssessment,
-    deleteTodayAssessment
+    deleteTodayAssessment,
+    getAssessmentPdf
 } = require('../controllers/assessmentController');
 
 
@@ -23,6 +24,9 @@ router.get('/today', authenticateToken, getTodayAssessments);
 router.get('/history', authenticateToken, requireAdmin, getAssessmentHistory);
 
 router.get('show/:id', authenticateToken, getAssessmentById);
+
+router.get('/pdf/:id', authenticateToken, getAssessmentPdf);
+
 
 router.get('/:id', authenticateToken, getAssessmentById);
 

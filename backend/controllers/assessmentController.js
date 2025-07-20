@@ -2,6 +2,7 @@ const db = require('../config/database');
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const moment = require('moment');
 const { getConditionsWithMitigationsByNames } = require('./conditionController');
+const generateAssessmentPdf = require('../utils/generateAssessmentPdf');
 
 
 // Helper function to safely parse JSON
@@ -354,5 +355,68 @@ exports.deleteTodayAssessment = async (req, res) => {
     } catch (error) {
         console.error('Error deleting assessment:', error.stack);
         res.status(500).json({ error: 'Failed to delete assessment.' });
+    }
+};
+
+exports.getAssessmentPdf = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tokenUserId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        const [rows] = await db.query(`
+      SELECT a.*, u1.name AS created_by_name, u2.name AS team_leader_name
+      FROM assessments a
+      LEFT JOIN users u1 ON a.created_by = u1.id
+      LEFT JOIN users u2 ON a.team_leader = u2.id
+      WHERE a.id = ?
+    `, [id]);
+
+        if (!rows.length) return res.status(404).json({ error: 'Assessment not found' });
+
+        const assessment = rows[0];
+
+        if (!isAdmin) {
+            const crew = JSON.parse(assessment.on_site_arborists || '[]');
+            const isInCrew = crew.includes(tokenUserId);
+            if (!isInCrew && assessment.created_by !== tokenUserId) {
+                return res.status(403).json({ error: 'Forbidden' });
+            }
+        }
+
+// Fetch users and map names + phone numbers
+        const [users] = await db.query('SELECT id, name, phone_number FROM users');
+        const userMap = users.reduce((acc, user) => {
+            acc[String(user.id)] = `${user.name}${user.phone_number ? ` (${user.phone_number})` : ''}`;
+            return acc;
+        }, {});
+
+// Map crew IDs to names with phones
+        const arboristIds = safeParse(assessment.on_site_arborists);
+        assessment.on_site_arborists = arboristIds.map(
+            (id) => userMap[String(id)] || `Unknown User (ID: ${id})`
+        );
+
+        // Parse conditions
+        assessment.weather_conditions = safeParse(assessment.weather_conditions);
+        assessment.location_risks = safeParse(assessment.location_risks);
+        assessment.tree_risks = safeParse(assessment.tree_risks);
+
+        // Map conditions with mitigations
+        assessment.location_conditions = await fetchConditionsWithMitigationsForAssessment(assessment.location_risks, 'location');
+        assessment.tree_conditions = await fetchConditionsWithMitigationsForAssessment(assessment.tree_risks, 'tree');
+        assessment.weather_conditions_details = await fetchConditionsWithMitigationsForAssessment(assessment.weather_conditions, 'weather');
+
+        const pdfBuffer = await generateAssessmentPdf(assessment);
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename=risk-assessment-${id}.pdf`,
+        });
+
+        res.send(pdfBuffer);
+    } catch (err) {
+        console.error('PDF generation failed:', err.message);
+        res.status(500).json({ error: 'Failed to generate PDF' });
     }
 };

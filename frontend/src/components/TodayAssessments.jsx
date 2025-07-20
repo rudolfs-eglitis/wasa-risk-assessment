@@ -7,7 +7,8 @@ import {
     FaMapMarkerAlt,
     FaPhone,
     FaClock,
-    FaUser
+    FaUser,
+    FaFilePdf
 } from 'react-icons/fa';
 
 const TodayAssessments = () => {
@@ -55,6 +56,33 @@ const TodayAssessments = () => {
         } catch (error) {
             console.error("Error deleting assessment:", error.response?.data || error.message);
             alert("Failed to delete assessment.");
+        }
+    };
+
+    const downloadPdf = async (id) => {
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch(`/assessments/pdf/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('PDF download failed');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wasa-risk-assessment-${id}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Could not download PDF');
+            console.error(err);
         }
     };
 
@@ -194,12 +222,16 @@ const TodayAssessments = () => {
                         <strong>All members of the crew is aware of the work plan, has appropriate PPE and work can be
                             carried out safely:</strong> {latestAssessment.safety_confirmation ? 'Yes' : 'No'}
                     </p>
-
-                    {parseInt(latestAssessment.created_by) === parseInt(currentUser) && (
-                        <button onClick={() => handleDelete(latestAssessment.id)} style={{ marginLeft: '10px' }}>
-                            Delete
+                    <p>
+                         <button onClick={() => downloadPdf(assessment.id)}>
+                            <FaFilePdf/> Download PDF
                         </button>
-                    )}
+                        {parseInt(latestAssessment.created_by) === parseInt(currentUser) && (
+                            <button onClick={() => handleDelete(latestAssessment.id)} style={{marginLeft: '10px'}}>
+                                Delete
+                            </button>
+                        )}
+                    </p>
                 </div>
             ) : (
                 <p>No assessments found for today.</p>
