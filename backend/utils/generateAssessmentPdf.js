@@ -45,26 +45,45 @@ function generateHtml(assessment) {
         ${(assessment.methods_of_work || []).map(method => `<li>${method}</li>`).join('') || '<li>No methods listed</li>'}
       </ul>
 
-      <h2>Tree Risks & Mitigations</h2>
-      <ul>
-        ${assessment.tree_conditions?.map(c =>
-        `<li><strong>${c.name}:</strong> ${c.mitigations?.map(m => m.name).join(', ') || 'No mitigations listed'}</li>`
-    ).join('') || '<li>No tree risks specified</li>'}
-      </ul>
+        <h2>Tree Risks & Mitigations</h2>
+        <ul>
+          ${assessment.tree_conditions?.map(c =>
+                `<li><strong>${c.name}:</strong>
+               <ul>
+                 ${c.mitigations?.length > 0
+                    ? c.mitigations.map(m => `<li>${m.name}</li>`).join('')
+                    : '<li>No mitigations listed</li>'}
+               </ul>
+             </li>`
+            ).join('') || '<li>No tree risks specified</li>'}
+        </ul>
+        
+        <h2>Location Risks & Mitigations</h2>
+        <ul>
+          ${assessment.location_conditions?.map(c =>
+                `<li><strong>${c.name}:</strong>
+               <ul>
+                 ${c.mitigations?.length > 0
+                    ? c.mitigations.map(m => `<li>${m.name}</li>`).join('')
+                    : '<li>No mitigations listed</li>'}
+               </ul>
+             </li>`
+            ).join('') || '<li>No location risks specified</li>'}
+        </ul>
+        
+        <h2>Weather Risks & Mitigations</h2>
+        <ul>
+          ${assessment.weather_conditions_details?.map(c =>
+                `<li><strong>${c.name}:</strong>
+               <ul>
+                 ${c.mitigations?.length > 0
+                    ? c.mitigations.map(m => `<li>${m.name}</li>`).join('')
+                    : '<li>No mitigations listed</li>'}
+               </ul>
+             </li>`
+            ).join('') || '<li>No weather risks specified</li>'}
+        </ul>
 
-      <h2>Location Risks & Mitigations</h2>
-      <ul>
-        ${assessment.location_conditions?.map(c =>
-        `<li><strong>${c.name}:</strong> ${c.mitigations?.map(m => m.name).join(', ') || 'No mitigations listed'}</li>`
-    ).join('') || '<li>No location risks specified</li>'}
-      </ul>
-
-      <h2>Weather Risks & Mitigations</h2>
-      <ul>
-        ${assessment.weather_conditions_details?.map(c =>
-        `<li><strong>${c.name}:</strong> ${c.mitigations?.map(m => m.name).join(', ') || 'No mitigations listed'}</li>`
-    ).join('') || '<li>No weather risks specified</li>'}
-      </ul>
 
       <h2>Additional Risks</h2>
       <p>${assessment.additional_risks || 'None listed'}</p>

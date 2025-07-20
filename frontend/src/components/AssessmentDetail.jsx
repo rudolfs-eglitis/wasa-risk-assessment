@@ -163,10 +163,16 @@ const AssessmentDetail = () => {
                 <ul>
                     {assessment.tree_conditions.map((condition) => (
                         <li key={condition.id}>
-                            <strong>{condition.name}:</strong>{' '}
-                            {condition.mitigations?.length > 0
-                                ? condition.mitigations.map((m) => m.name).join(', ')
-                                : 'No mitigations listed.'}
+                            <strong>{condition.name}:</strong>
+                            {condition.mitigations?.length > 0 ? (
+                                <ul>
+                                    {condition.mitigations.map((m) => (
+                                        <li key={m.id}>{m.name}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No mitigations listed.</p>
+                            )}
                         </li>
                     ))}
                 </ul>
@@ -174,16 +180,23 @@ const AssessmentDetail = () => {
                 <p>No tree risks specified.</p>
             )}
 
+
             {/* Location Risks and Mitigations */}
             <h3>Location Risks and Mitigations</h3>
             {assessment.location_conditions?.length > 0 ? (
                 <ul>
                     {assessment.location_conditions.map((condition) => (
                         <li key={condition.id}>
-                            <strong>{condition.name}:</strong>{' '}
-                            {condition.mitigations?.length > 0
-                                ? condition.mitigations.map((m) => m.name).join(', ')
-                                : 'No mitigations listed.'}
+                            <strong>{condition.name}:</strong>
+                            {condition.mitigations?.length > 0 ? (
+                                <ul>
+                                    {condition.mitigations.map((m) => (
+                                        <li key={m.id}>{m.name}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No mitigations listed.</p>
+                            )}
                         </li>
                     ))}
                 </ul>
@@ -191,22 +204,30 @@ const AssessmentDetail = () => {
                 <p>No location risks specified.</p>
             )}
 
+
             {/* Weather Risks and Mitigations */}
             <h3>Weather Risks and Mitigations</h3>
             {assessment.weather_conditions_details?.length > 0 ? (
                 <ul>
                     {assessment.weather_conditions_details.map((condition) => (
                         <li key={condition.id}>
-                            <strong>{condition.name}:</strong>{' '}
-                            {condition.mitigations?.length > 0
-                                ? condition.mitigations.map((m) => m.name).join(', ')
-                                : 'No mitigations listed.'}
+                            <strong>{condition.name}:</strong>
+                            {condition.mitigations?.length > 0 ? (
+                                <ul>
+                                    {condition.mitigations.map((m) => (
+                                        <li key={m.id}>{m.name}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No mitigations listed.</p>
+                            )}
                         </li>
                     ))}
                 </ul>
             ) : (
                 <p>No weather risks specified.</p>
             )}
+
             <h3>Additional Risks:</h3>{' '}
             <p>
                 {assessment.additional_risks || 'None'}
