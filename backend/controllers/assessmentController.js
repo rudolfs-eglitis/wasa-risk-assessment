@@ -365,17 +365,18 @@ exports.getAssessmentPdf = async (req, res) => {
         const isAdmin = req.user.role === 'admin';
 
         const [rows] = await db.query(`
-      SELECT a.*, u1.name AS created_by_name, u2.name AS team_leader_name
-      FROM assessments a
-      LEFT JOIN users u1 ON a.created_by = u1.id
-      LEFT JOIN users u2 ON a.team_leader = u2.id
-      WHERE a.id = ?
-    `, [id]);
+            SELECT a.*, u1.name AS created_by_name, u2.name AS team_leader_name
+            FROM assessments a
+                     LEFT JOIN users u1 ON a.created_by = u1.id
+                     LEFT JOIN users u2 ON a.team_leader = u2.id
+            WHERE a.id = ?
+        `, [id]);
 
         if (!rows.length) return res.status(404).json({ error: 'Assessment not found' });
 
         const assessment = rows[0];
 
+        // Access control
         if (!isAdmin) {
             const crew = JSON.parse(assessment.on_site_arborists || '[]');
             const isInCrew = crew.includes(tokenUserId);
@@ -384,41 +385,42 @@ exports.getAssessmentPdf = async (req, res) => {
             }
         }
 
-// Fetch users and map names + phone numbers
+        // Parse JSON fields
+        const arboristIds = safeParse(assessment.on_site_arborists);
+        assessment.weather_conditions = safeParse(assessment.weather_conditions);
+        assessment.methods_of_work = safeParse(assessment.methods_of_work);
+        assessment.location_risks = safeParse(assessment.location_risks);
+        assessment.tree_risks = safeParse(assessment.tree_risks);
+
+        // Fetch users and build name + phone map
         const [users] = await db.query('SELECT id, name, phone_number FROM users');
         const userMap = users.reduce((acc, user) => {
             acc[String(user.id)] = `${user.name}${user.phone_number ? ` (${user.phone_number})` : ''}`;
             return acc;
         }, {});
 
-// Map crew IDs to names with phones
-        const arboristIds = safeParse(assessment.on_site_arborists);
+        // Map arborist IDs to full string
         assessment.on_site_arborists = arboristIds.map(
             (id) => userMap[String(id)] || `Unknown User (ID: ${id})`
         );
 
-        // Parse conditions
-        assessment.weather_conditions = safeParse(assessment.weather_conditions);
-        assessment.location_risks = safeParse(assessment.location_risks);
-        assessment.tree_risks = safeParse(assessment.tree_risks);
+        // Get condition details
+        assessment.location_conditions = await fetchConditionsWithMitigationsForAssessment(
+            assessment.location_risks,
+            'location'
+        );
+        assessment.tree_conditions = await fetchConditionsWithMitigationsForAssessment(
+            assessment.tree_risks,
+            'tree'
+        );
+        assessment.weather_conditions_details = await fetchConditionsWithMitigationsForAssessment(
+            assessment.weather_conditions,
+            'weather'
+        );
 
-        // Map conditions with mitigations
-        assessment.location_conditions = await fetchConditionsWithMitigationsForAssessment(assessment.location_risks, 'location');
-        assessment.tree_conditions = await fetchConditionsWithMitigationsForAssessment(assessment.tree_risks, 'tree');
-        assessment.weather_conditions_details = await fetchConditionsWithMitigationsForAssessment(assessment.weather_conditions, 'weather');
-
-        console.log('[PDF] Starting PDF generation for ID:', id);
-        console.log('[PDF] Assessment summary:', {
-            id: assessment.id,
-            created_by: assessment.created_by,
-            arborists: assessment.on_site_arborists,
-        });
+        console.log('[PDF DEBUG] Crew in final payload:', assessment.on_site_arborists);
 
         const pdfBuffer = await generateAssessmentPdf(assessment);
-        if (!pdfBuffer || !Buffer.isBuffer(pdfBuffer)) {
-            console.error('[PDF] Invalid PDF buffer!');
-            return res.status(500).json({ error: 'PDF generation failed' });
-        }
 
         res.set({
             'Content-Type': 'application/pdf',

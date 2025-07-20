@@ -30,10 +30,15 @@ function generateHtml(assessment) {
 
       <p><strong>Car key & First Aid location:</strong> ${assessment.car_key_location || 'Not specified'}</p>
 
-      <h2>Crew</h2>
-      <ul>
-        ${(assessment.on_site_arborists || []).map(name => `<li>${name}</li>`).join('') || '<li>No crew listed</li>'}
-      </ul>
+<h2>Crew</h2>
+<ul>
+  ${
+        Array.isArray(assessment.on_site_arborists) && assessment.on_site_arborists.length > 0
+            ? assessment.on_site_arborists.map(arborist => `<li>${arborist}</li>`).join('')
+            : '<li>No crew listed</li>'
+    }
+</ul>
+
 
       <h2>Methods of Work</h2>
       <ul>
