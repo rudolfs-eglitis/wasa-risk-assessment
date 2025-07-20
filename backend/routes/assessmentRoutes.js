@@ -25,7 +25,7 @@ router.get('/history', authenticateToken, requireAdmin, getAssessmentHistory);
 
 router.get('show/:id', authenticateToken, getAssessmentById);
 
-router.get('/pdf/:id', authenticateToken, getAssessmentPdf);
+router.get('pdf/:id', authenticateToken, getAssessmentPdf);
 
 
 router.get('/:id', authenticateToken, getAssessmentById);

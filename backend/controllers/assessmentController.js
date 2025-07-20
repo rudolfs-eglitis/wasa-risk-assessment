@@ -407,7 +407,18 @@ exports.getAssessmentPdf = async (req, res) => {
         assessment.tree_conditions = await fetchConditionsWithMitigationsForAssessment(assessment.tree_risks, 'tree');
         assessment.weather_conditions_details = await fetchConditionsWithMitigationsForAssessment(assessment.weather_conditions, 'weather');
 
+        console.log('[PDF] Starting PDF generation for ID:', id);
+        console.log('[PDF] Assessment summary:', {
+            id: assessment.id,
+            created_by: assessment.created_by,
+            arborists: assessment.on_site_arborists,
+        });
+
         const pdfBuffer = await generateAssessmentPdf(assessment);
+        if (!pdfBuffer || !Buffer.isBuffer(pdfBuffer)) {
+            console.error('[PDF] Invalid PDF buffer!');
+            return res.status(500).json({ error: 'PDF generation failed' });
+        }
 
         res.set({
             'Content-Type': 'application/pdf',
