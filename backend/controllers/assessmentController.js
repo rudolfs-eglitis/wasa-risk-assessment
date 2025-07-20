@@ -376,11 +376,15 @@ exports.getAssessmentPdf = async (req, res) => {
 
         const assessment = rows[0];
 
+        // Safe parse crew
+        const crew = safeParse(assessment.on_site_arborists);
+        console.log('[PDF DEBUG] Crew:', crew, 'Token User:', tokenUserId);
+
         // Access control
         if (!isAdmin) {
-            const crew = JSON.parse(assessment.on_site_arborists || '[]');
             const isInCrew = crew.includes(tokenUserId);
-            if (!isInCrew && assessment.created_by !== tokenUserId) {
+            const isCreator = assessment.created_by === tokenUserId;
+            if (!isInCrew && !isCreator) {
                 return res.status(403).json({ error: 'Forbidden' });
             }
         }
@@ -392,19 +396,18 @@ exports.getAssessmentPdf = async (req, res) => {
         assessment.location_risks = safeParse(assessment.location_risks);
         assessment.tree_risks = safeParse(assessment.tree_risks);
 
-        // Fetch users and build name + phone map
+        // 👥 Fetch users and format name + phone
         const [users] = await db.query('SELECT id, name, phone_number FROM users');
         const userMap = users.reduce((acc, user) => {
             acc[String(user.id)] = `${user.name}${user.phone_number ? ` (${user.phone_number})` : ''}`;
             return acc;
         }, {});
 
-        // Map arborist IDs to full string
         assessment.on_site_arborists = arboristIds.map(
             (id) => userMap[String(id)] || `Unknown User (ID: ${id})`
         );
 
-        // Get condition details
+        // Get full condition data
         assessment.location_conditions = await fetchConditionsWithMitigationsForAssessment(
             assessment.location_risks,
             'location'
@@ -418,9 +421,13 @@ exports.getAssessmentPdf = async (req, res) => {
             'weather'
         );
 
-        console.log('[PDF DEBUG] Crew in final payload:', assessment.on_site_arborists);
+        console.log('[PDF DEBUG] Final crew display:', assessment.on_site_arborists);
 
+        // Generate and send PDF
         const pdfBuffer = await generateAssessmentPdf(assessment);
+        if (!pdfBuffer || !Buffer.isBuffer(pdfBuffer)) {
+            return res.status(500).json({ error: 'PDF generation failed' });
+        }
 
         res.set({
             'Content-Type': 'application/pdf',
