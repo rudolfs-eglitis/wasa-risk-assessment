@@ -361,7 +361,7 @@ exports.deleteTodayAssessment = async (req, res) => {
 exports.getAssessmentPdf = async (req, res) => {
     try {
         const { id } = req.params;
-        const tokenUserId = req.user.id;
+        const tokenUserId = String(req.user.id); // normalize early
         const isAdmin = req.user.role === 'admin';
 
         const [rows] = await db.query(`
@@ -376,27 +376,23 @@ exports.getAssessmentPdf = async (req, res) => {
 
         const assessment = rows[0];
 
-        // Safe parse crew
-        const crew = safeParse(assessment.on_site_arborists);
-        console.log('[PDF DEBUG] Crew:', crew, 'Token User:', tokenUserId);
+        // Access control: match the logic in getAssessmentById
+        const crewIds = safeParse(assessment.on_site_arborists || '[]').map(id => String(id));
+        const isInCrew = crewIds.includes(tokenUserId);
+        const isCreator = String(assessment.created_by) === tokenUserId;
 
-        // Access control
-        if (!isAdmin) {
-            const isInCrew = crew.includes(tokenUserId);
-            const isCreator = assessment.created_by === tokenUserId;
-            if (!isInCrew && !isCreator) {
-                return res.status(403).json({ error: 'Forbidden' });
-            }
+        if (!isAdmin && !isInCrew && !isCreator) {
+            return res.status(403).json({ error: 'Forbidden' });
         }
 
-        // Parse JSON fields
+        // Parse assessment fields
         const arboristIds = safeParse(assessment.on_site_arborists);
         assessment.weather_conditions = safeParse(assessment.weather_conditions);
         assessment.methods_of_work = safeParse(assessment.methods_of_work);
         assessment.location_risks = safeParse(assessment.location_risks);
         assessment.tree_risks = safeParse(assessment.tree_risks);
 
-        // 👥 Fetch users and format name + phone
+        // Fetch and map user details
         const [users] = await db.query('SELECT id, name, phone_number FROM users');
         const userMap = users.reduce((acc, user) => {
             acc[String(user.id)] = `${user.name}${user.phone_number ? ` (${user.phone_number})` : ''}`;
@@ -407,7 +403,7 @@ exports.getAssessmentPdf = async (req, res) => {
             (id) => userMap[String(id)] || `Unknown User (ID: ${id})`
         );
 
-        // Get full condition data
+        // Fetch detailed conditions
         assessment.location_conditions = await fetchConditionsWithMitigationsForAssessment(
             assessment.location_risks,
             'location'
@@ -421,9 +417,6 @@ exports.getAssessmentPdf = async (req, res) => {
             'weather'
         );
 
-        console.log('[PDF DEBUG] Final crew display:', assessment.on_site_arborists);
-
-        // Generate and send PDF
         const pdfBuffer = await generateAssessmentPdf(assessment);
         if (!pdfBuffer || !Buffer.isBuffer(pdfBuffer)) {
             return res.status(500).json({ error: 'PDF generation failed' });
