@@ -94,12 +94,12 @@ const TodayAssessments = () => {
             {latestAssessment ? (
                 <div className="assessment-detail">
                     <p>
-                        <FaClock style={{ marginRight: '6px' }} />
+                        <FaClock style={{marginRight: '6px'}}/>
                         {new Date(latestAssessment.created_at).toLocaleString('en-GB', {
                             hour: '2-digit', minute: '2-digit', hour12: false
                         })}
                         &nbsp;|&nbsp;
-                        <FaUser style={{ marginRight: '6px' }} />
+                        <FaUser style={{marginRight: '6px'}}/>
                         {latestAssessment.created_by_name || 'Unknown'}
                     </p>
                     <p>
@@ -108,18 +108,18 @@ const TodayAssessments = () => {
                             href={`https://www.google.com/maps?q=${encodeURIComponent(latestAssessment.job_site_address)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ marginLeft: '10px' }}
+                            style={{marginLeft: '10px'}}
                         >
                             {latestAssessment.job_site_address}
                         </a>
                     </p>
-                    <div style={{ marginTop: '1rem' }}>
+                    <div style={{marginTop: '1rem'}}>
                         <iframe
                             title="Google Maps"
                             width="100%"
                             height="250"
                             frameBorder="0"
-                            style={{ border: 0 }}
+                            style={{border: 0}}
                             src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_API_KEY}&q=${encodeURIComponent(latestAssessment.job_site_address)}`}
                             allowFullScreen
                         />
@@ -134,7 +134,7 @@ const TodayAssessments = () => {
                                 rel="noopener noreferrer"
                                 title="View on Map"
                             >
-                                {latestAssessment.job_site_lat}, {latestAssessment.job_site_lng} <FaMapMarkerAlt />
+                                {latestAssessment.job_site_lat}, {latestAssessment.job_site_lng} <FaMapMarkerAlt/>
                             </a>
                         </p>
                     )}
@@ -146,24 +146,25 @@ const TodayAssessments = () => {
                                 href={`https://www.google.com/maps?q=${encodeURIComponent(latestAssessment.nearest_hospital_address)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style={{ marginLeft: '8px' }}
+                                style={{marginLeft: '8px'}}
                                 title="View on Map"
                             >
-                                {latestAssessment.nearest_hospital_name} <FaMapMarkerAlt />
+                                {latestAssessment.nearest_hospital_name} <FaMapMarkerAlt/>
                             </a>
                         )}
                         {latestAssessment.nearest_hospital_phone && (
                             <a
                                 href={`tel:${latestAssessment.nearest_hospital_phone}`}
-                                style={{ marginLeft: '8px' }}
+                                style={{marginLeft: '8px'}}
                                 title="Call Hospital"
                             >
-                                <FaPhone />
+                                <FaPhone/>
                             </a>
                         )}
                     </p>
 
-                    <p><strong>Car Key and First Aid Location:</strong> {latestAssessment.car_key_location || 'Not specified'}</p>
+                    <p><strong>Car Key and First Aid
+                        Location:</strong> {latestAssessment.car_key_location || 'Not specified'}</p>
                     <p><strong>Team Leader:</strong> {latestAssessment.team_leader_name || 'Not specified'}</p>
                     <p><strong>Crew:</strong> {latestAssessment.on_site_arborists.join(', ')}</p>
                     <p><strong>Methods of Work:</strong> {latestAssessment.methods_of_work.join(', ')}</p>
@@ -173,10 +174,12 @@ const TodayAssessments = () => {
                         <ul>
                             {latestAssessment.tree_conditions.map((condition) => (
                                 <li key={condition.id}>
-                                    <strong>{condition.name}:</strong>{' '}
-                                    {condition.mitigations?.length > 0
-                                        ? condition.mitigations.map((m) => m.name).join(', ')
-                                        : 'No mitigations listed.'}
+                                    <strong>{condition.name}:</strong>
+                                    <ul>
+                                        {condition.mitigations?.length > 0
+                                            ? condition.mitigations.map((m, i) => <li key={i}>{m.name}</li>)
+                                            : <li>No mitigations listed.</li>}
+                                    </ul>
                                 </li>
                             ))}
                         </ul>
@@ -189,10 +192,12 @@ const TodayAssessments = () => {
                         <ul>
                             {latestAssessment.location_conditions.map((condition) => (
                                 <li key={condition.id}>
-                                    <strong>{condition.name}:</strong>{' '}
-                                    {condition.mitigations?.length > 0
-                                        ? condition.mitigations.map((m) => m.name).join(', ')
-                                        : 'No mitigations listed.'}
+                                    <strong>{condition.name}:</strong>
+                                    <ul>
+                                        {condition.mitigations?.length > 0
+                                            ? condition.mitigations.map((m, i) => <li key={i}>{m.name}</li>)
+                                            : <li>No mitigations listed.</li>}
+                                    </ul>
                                 </li>
                             ))}
                         </ul>
@@ -205,16 +210,19 @@ const TodayAssessments = () => {
                         <ul>
                             {latestAssessment.weather_conditions_details.map((condition) => (
                                 <li key={condition.id}>
-                                    <strong>{condition.name}:</strong>{' '}
-                                    {condition.mitigations?.length > 0
-                                        ? condition.mitigations.map((m) => m.name).join(', ')
-                                        : 'No mitigations listed.'}
+                                    <strong>{condition.name}:</strong>
+                                    <ul>
+                                        {condition.mitigations?.length > 0
+                                            ? condition.mitigations.map((m, i) => <li key={i}>{m.name}</li>)
+                                            : <li>No mitigations listed.</li>}
+                                    </ul>
                                 </li>
                             ))}
                         </ul>
                     ) : (
                         <p>No weather risks specified.</p>
                     )}
+
                     <h3>Additional Risks:</h3>
                     <p>{latestAssessment.additional_risks || 'None'}</p>
 
@@ -223,7 +231,7 @@ const TodayAssessments = () => {
                             carried out safely:</strong> {latestAssessment.safety_confirmation ? 'Yes' : 'No'}
                     </p>
                     <p>
-                         <button onClick={() => downloadPdf(assessment.id)}>
+                        <button onClick={() => downloadPdf(latestAssessment.id)}>
                             <FaFilePdf/> Download PDF
                         </button>
                         {parseInt(latestAssessment.created_by) === parseInt(currentUser) && (
