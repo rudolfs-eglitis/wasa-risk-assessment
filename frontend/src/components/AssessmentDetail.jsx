@@ -157,11 +157,6 @@ const AssessmentDetail = () => {
                 <strong>Methods of Work:</strong>{' '}
                 {Array.isArray(assessment.methods_of_work) ? assessment.methods_of_work.join(', ') : 'Not specified'}
             </p>
-            {assessment.methods_of_work_comment && (
-                <p>
-                    <strong>Method Notes:</strong> {assessment.methods_of_work_comment}
-                </p>
-            )}
             {/* Tree Risks and Mitigations */}
             <h3>Tree Risks and Mitigations</h3>
             {assessment.tree_conditions?.length > 0 ? (

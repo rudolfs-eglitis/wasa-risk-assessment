@@ -23,9 +23,6 @@ const RiskAssessmentForm = () => {
     const [weatherApproval, setWeatherApproval] = useState(false); // Track confirmation checkbox
 
     const [methodsOfWork, setMethodsOfWork] = useState([]);
-    const [methodsOfWorkComment, setMethodsOfWorkComment] = useState('');
-    const [isRecordingMethods, setIsRecordingMethods] = useState(false);
-    const [speechSupported, setSpeechSupported] = useState(true);
 
     const [locationRisks, setLocationRisks] = useState([]);
 
@@ -60,36 +57,6 @@ const RiskAssessmentForm = () => {
             autocompleteRef.current.addListener('place_changed', handlePlaceSelect);
         }
     }, [isLoaded]);
-
-    useEffect(() => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            setSpeechSupported(false);
-            return;
-        }
-
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.continuous = true;
-        recognition.interimResults = false;
-
-        recognition.onresult = (event) => {
-            const transcript = Array.from(event.results)
-                .map((result) => result[0].transcript)
-                .join(' ');
-            setMethodsOfWorkComment((prev) => `${prev} ${transcript}`.trim());
-        };
-
-        recognition.onerror = () => {
-            setIsRecordingMethods(false);
-        };
-
-        recognition.onend = () => {
-            setIsRecordingMethods(false);
-        };
-
-        speechRecognitionRef.current = recognition;
-    }, []);
 
     // Auto-detect location on mount if enabled
     useEffect(() => {
@@ -359,22 +326,6 @@ const RiskAssessmentForm = () => {
         setTeamLeader(e.target.value);
     };
 
-    const speechRecognitionRef = useRef(null);
-
-    const toggleMethodsVoice = () => {
-        if (!speechSupported || !speechRecognitionRef.current) {
-            return;
-        }
-
-        if (isRecordingMethods) {
-            speechRecognitionRef.current.stop();
-            setIsRecordingMethods(false);
-        } else {
-            setIsRecordingMethods(true);
-            speechRecognitionRef.current.start();
-        }
-    };
-
 
     const methodsOfWorkOptions = ['Ground felling', 'Section felling', 'Rigging', 'Pruning', 'Hedge trimming', 'Stump grinding', 'Planting', 'Root excavation']
 
@@ -511,7 +462,6 @@ const RiskAssessmentForm = () => {
             onSiteArborists,
             weatherConditions,
             methodsOfWork,
-            methodsOfWorkComment,
             locationRisks,
             treeRisks,
             carKeyLocation,
@@ -657,25 +607,6 @@ const RiskAssessmentForm = () => {
                             {method}</label>
                     </div>
                 ))}
-            </div>
-
-            <div className="form-group" style={{marginTop: '10px'}}>
-                <label htmlFor="methodsOfWorkComment"><strong>Method Notes</strong> (voice or typed)</label>
-                <textarea
-                    id="methodsOfWorkComment"
-                    placeholder="Describe different ways to perform the job"
-                    value={methodsOfWorkComment}
-                    onChange={(e) => setMethodsOfWorkComment(e.target.value)}
-                    rows={3}
-                    style={{width: '100%'}}
-                />
-                {speechSupported ? (
-                    <button type="button" onClick={toggleMethodsVoice} style={{marginTop: '6px'}}>
-                        {isRecordingMethods ? 'Stop voice recording' : 'Start voice comment'}
-                    </button>
-                ) : (
-                    <p style={{color: 'gray'}}>Voice input is not supported in this browser.</p>
-                )}
             </div>
 
             {/* On-Site Machinery */}

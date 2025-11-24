@@ -1,7 +1,6 @@
 const db = require('../config/database');
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const moment = require('moment');
-const axios = require('axios');
 const { getConditionsWithMitigationsByNames } = require('./conditionController');
 const generateAssessmentPdf = require('../utils/generateAssessmentPdf');
 
@@ -30,7 +29,6 @@ exports.createAssessment = async (req, res) => {
             onSiteArborists, // Array of arborist IDs
             weatherConditions, // Array of strings
             methodsOfWork, // Array of strings
-            methodsOfWorkComment, // String (voice or typed)
             locationRisks, // Array of strings
             treeRisks, // Array of strings
             nearestHospital, // Object: { name, address, phone } (optional)
@@ -61,10 +59,10 @@ exports.createAssessment = async (req, res) => {
       INSERT INTO assessments (
         job_site_address, job_site_lat, job_site_lng,
         nearest_hospital_name, nearest_hospital_address, nearest_hospital_phone,
-        on_site_arborists, weather_conditions, methods_of_work, methods_of_work_comment, location_risks, tree_risks,
+        on_site_arborists, weather_conditions, methods_of_work, location_risks, tree_risks,
         car_key_location, additional_risks, safety_confirmation, team_leader, created_by
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
             [
                 jobSiteLocation.address,
@@ -76,7 +74,6 @@ exports.createAssessment = async (req, res) => {
                 JSON.stringify(onSiteArborists),
                 JSON.stringify(weatherConditions),
                 JSON.stringify(methodsOfWork),
-                methodsOfWorkComment || null,
                 JSON.stringify(locationRisks),
                 JSON.stringify(treeRisks),
                 carKeyLocation,

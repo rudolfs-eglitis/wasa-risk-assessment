@@ -45,9 +45,6 @@ function generateHtml(assessment) {
         ${(assessment.methods_of_work || []).map(method => `<li>${method}</li>`).join('') || '<li>No methods listed</li>'}
       </ul>
 
-      <h3>Method Notes</h3>
-      <p>${assessment.methods_of_work_comment || 'No additional notes provided'}</p>
-
         <h2>Tree Risks & Mitigations</h2>
         <ul>
           ${assessment.tree_conditions?.map(c =>
