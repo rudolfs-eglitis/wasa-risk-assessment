@@ -168,6 +168,9 @@ const TodayAssessments = () => {
                     <p><strong>Team Leader:</strong> {latestAssessment.team_leader_name || 'Not specified'}</p>
                     <p><strong>Crew:</strong> {latestAssessment.on_site_arborists.join(', ')}</p>
                     <p><strong>Methods of Work:</strong> {latestAssessment.methods_of_work.join(', ')}</p>
+                    {latestAssessment.methods_of_work_comment && (
+                        <p><strong>Method Notes:</strong> {latestAssessment.methods_of_work_comment}</p>
+                    )}
 
                     <h3>Tree Risks and Mitigations</h3>
                     {latestAssessment.tree_conditions?.length > 0 ? (
