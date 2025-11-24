@@ -22,15 +22,16 @@ app.use(express.json());
 // Serve static files from React (frontend build directory)
 app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
 
-// Routes
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
-app.use('/conditions', conditionRoutes);
-app.use('/mitigations', mitigationRoutes);
-app.use('/assessments', assessmentRoutes);
+// Routes (all API endpoints are prefixed for reverse-proxy compatibility)
+const API_PREFIX = '/api';
 
+app.use(`${API_PREFIX}/auth`, authRoutes);
+app.use(`${API_PREFIX}/users`, userRoutes);
+app.use(`${API_PREFIX}/conditions`, conditionRoutes);
+app.use(`${API_PREFIX}/mitigations`, mitigationRoutes);
+app.use(`${API_PREFIX}/assessments`, assessmentRoutes);
 
-app.use('/api/geocode', geocodeRoutes);
+app.use(`${API_PREFIX}/geocode`, geocodeRoutes);
 app.use('/protected', authenticateToken, (req, res) => {
     res.send('This is a protected route');
 });
