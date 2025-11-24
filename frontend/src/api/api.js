@@ -1,10 +1,9 @@
 import axios from 'axios';
 
-const API_PREFIX = '/api';
 const baseURL =
     process.env.NODE_ENV === 'production'
-        ? API_PREFIX
-        : `http://localhost:4000${API_PREFIX}`;
+        ? 'https://risk.wasatradfallning.com'
+        : 'http://localhost:4000';
 
 
 // Create an Axios instance with the base URL of your backend API
@@ -23,7 +22,7 @@ api.interceptors.response.use(
 
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
-                const response = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
+                const response = await axios.post('http://localhost:4000/auth/refresh', { refreshToken });
 
                 // Update access token
                 const { accessToken } = response.data;
